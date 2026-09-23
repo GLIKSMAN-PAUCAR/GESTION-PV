@@ -172,16 +172,25 @@
                 <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left bg-blue-600 text-white font-medium shadow-md shadow-blue-900/20 transition">
                     <i class="fa-solid fa-route w-5 text-center"></i> Frecuencias
                 </button>
+                <button onclick="switchTab('clientes')" id="btn-clientes" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-solid fa-building-user w-5 text-center"></i> Control de Clientes
+                </button>
                 <button onclick="switchTab('kanban')" id="btn-kanban" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
                     <i class="fa-solid fa-table-columns w-5 text-center"></i> Kanban Prioridades
                 </button>
                 <button onclick="switchTab('cal_proy')" id="btn-cal_proy" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
                     <i class="fa-regular fa-calendar-check w-5 text-center text-emerald-400"></i> Calendario Proyectado
                 </button>
-                
-                <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 mt-6 px-4">Configuración</div>
-                <button onclick="switchTab('api')" id="btn-api" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
-                    <i class="fa-solid fa-cloud-arrow-down w-5 text-center"></i> Conexión AppSheet
+
+                <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 mt-6 px-4">Personal Posventa</div>
+                <button onclick="switchTab('cal_tec')" id="btn-cal_tec" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-regular fa-calendar-days w-5 text-center text-purple-400"></i> Calendario Personal
+                </button>
+                <button onclick="switchTab('informes')" id="btn-informes" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-solid fa-file-circle-check w-5 text-center text-amber-400"></i> Seguimiento Informes
+                </button>
+                <button onclick="switchTab('evaluacion')" id="btn-evaluacion" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-solid fa-user-tie w-5 text-center text-cyan-400"></i> Evaluación Personal
                 </button>
             </nav>
         </div>
@@ -350,6 +359,229 @@
             </section>
 
             <!-- ========================================== -->
+            <!-- TAB: CONTROL DE CLIENTES POSVENTA          -->
+            <!-- ========================================== -->
+            <section id="tab-clientes" class="tab-content h-full space-y-4">
+
+                <!-- Contenedor Superior: Filtros -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-4 md:p-5 border border-slate-200 dark:border-slate-700 transition-colors">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Buscador de Sedes</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 ml-1">1. Seleccionar Cliente</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <i class="fa-regular fa-building text-slate-400"></i>
+                                </div>
+                                <select id="sel-cliente" onchange="updateSedeDropdown()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg pl-10 p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500 appearance-none shadow-sm transition">
+                                    <option value="">-- Elige un cliente --</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 ml-1">2. Seleccionar Sede</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <i class="fa-solid fa-location-dot text-slate-400"></i>
+                                </div>
+                                <select id="sel-sede" onchange="renderClientProfile()" disabled class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg pl-10 p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500 appearance-none shadow-sm disabled:opacity-50 transition">
+                                    <option value="">-- Elige una sede --</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estado Vacío antes de la selección -->
+                <div id="cliente-empty-state" class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-16 flex flex-col items-center justify-center text-center transition-colors">
+                    <div class="w-20 h-20 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4 text-blue-500 dark:text-blue-400 text-4xl">
+                        <i class="fa-solid fa-building-user"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Perfil de Sede Posventa</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-sm">Selecciona un cliente y una de sus sedes para ver su historial de visitas de posventa.</p>
+                </div>
+
+                <!-- Contenedor Principal -->
+                <div id="cliente-profile-wrapper" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-6 pb-10">
+
+                    <!-- LADO IZQUIERDO: TARJETA DE PERFIL -->
+                    <div class="col-span-1 space-y-6">
+                        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
+                            <div class="h-28 bg-gradient-to-r from-slate-800 to-slate-700 dark:from-slate-900 dark:to-slate-800 relative">
+                                <div class="absolute -bottom-10 left-6">
+                                    <div class="w-20 h-20 bg-white dark:bg-slate-800 rounded-xl p-1 shadow-md border-4 border-white dark:border-slate-800">
+                                        <div class="w-full h-full bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 text-3xl">
+                                            <i class="fa-regular fa-building"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-12 px-6 pb-5 border-b border-slate-100 dark:border-slate-700/50">
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white leading-tight" id="cp-sede-name">Sede</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium" id="cp-cliente-name">Cliente</p>
+                                <div class="mt-4 flex flex-wrap items-center gap-2">
+                                    <span id="cp-estado-frec" class="text-xs font-bold px-2.5 py-1 rounded-full border shadow-sm">-</span>
+                                    <span class="bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-600 shadow-sm" id="cp-tipo">-</span>
+                                </div>
+                            </div>
+
+                            <div class="p-6 space-y-5 text-sm">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Frecuencia Posventa</p>
+                                    <p class="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                        <span id="cp-frecuencia" class="text-blue-600 dark:text-blue-400 text-base">-</span>
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Última Visita</p>
+                                        <p class="font-semibold text-slate-800 dark:text-slate-200" id="cp-ultima">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Próxima Sugerida</p>
+                                        <p class="font-semibold text-slate-800 dark:text-slate-200" id="cp-proxima">-</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-user-tie mr-1"></i> Responsable Habitual</p>
+                                    <p class="font-semibold text-slate-800 dark:text-slate-200" id="cp-responsable">-</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400" id="cp-responsable-det"></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-location-dot mr-1"></i> Dirección de Sede</p>
+                                    <p class="font-medium text-slate-700 dark:text-slate-300 leading-snug" id="cp-direccion">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2"><i class="fa-solid fa-list-check mr-1"></i> Resumen Histórico</p>
+                                    <div class="grid grid-cols-3 gap-2 text-center">
+                                        <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 rounded-lg py-2">
+                                            <p class="text-lg font-black text-emerald-600 dark:text-emerald-400 leading-none" id="cp-n-realizadas">0</p>
+                                            <p class="text-[9px] font-bold text-emerald-700 dark:text-emerald-500 uppercase mt-1">Realizadas</p>
+                                        </div>
+                                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-lg py-2">
+                                            <p class="text-lg font-black text-blue-600 dark:text-blue-400 leading-none" id="cp-n-pendientes">0</p>
+                                            <p class="text-[9px] font-bold text-blue-700 dark:text-blue-500 uppercase mt-1">Pendientes</p>
+                                        </div>
+                                        <div class="bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/40 rounded-lg py-2">
+                                            <p class="text-lg font-black text-rose-600 dark:text-rose-400 leading-none" id="cp-n-canceladas">0</p>
+                                            <p class="text-[9px] font-bold text-rose-700 dark:text-rose-500 uppercase mt-1">Canceladas</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LADO DERECHO -->
+                    <div class="col-span-1 lg:col-span-3 flex flex-col space-y-6">
+
+                        <!-- GRÁFICO CRONOLÓGICO -->
+                        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 transition-colors">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                                <div>
+                                    <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                        <i class="fa-solid fa-chart-column text-blue-500"></i> HISTORIAL CRONOLÓGICO DE VISITAS POSVENTA
+                                    </h3>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Visitas en plan (1.ª del mes) vs visitas adicionales, frente a la meta por frecuencia.</p>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-700" id="chart-year-selector"></div>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-center">
+                                <div class="lg:col-span-3 h-64 relative">
+                                    <canvas id="monthlyVisitsChart"></canvas>
+                                </div>
+                                <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/60 space-y-4 flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Plan Anualizado (Meta)</span>
+                                        <div class="flex items-baseline gap-1.5 mt-1">
+                                            <h4 class="text-2xl font-black text-blue-600 dark:text-blue-400" id="meta-visitas-anual">0</h4>
+                                            <span class="text-xs text-slate-500">visitas / año</span>
+                                        </div>
+                                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1" id="meta-calc-details">-</p>
+                                    </div>
+                                    <div class="border-t border-slate-200 dark:border-slate-700 pt-3 flex flex-col gap-2">
+                                        <div>
+                                            <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider">✔️ En Plan</span>
+                                            <div class="flex items-baseline gap-1.5 mt-0.5">
+                                                <h4 class="text-xl font-black text-emerald-600 dark:text-emerald-400" id="ejecucion-preventivas">0</h4>
+                                                <span class="text-xs text-slate-500">visitas</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider">➕ Adicionales</span>
+                                            <div class="flex items-baseline gap-1.5 mt-0.5">
+                                                <h4 class="text-xl font-black text-amber-600 dark:text-amber-400" id="ejecucion-correctivas">0</h4>
+                                                <span class="text-xs text-slate-500">visitas</span>
+                                            </div>
+                                        </div>
+                                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1 overflow-hidden flex">
+                                            <div class="bg-emerald-500 h-1.5 transition-all duration-500" id="meta-progress-bar-prev" style="width: 0%"></div>
+                                            <div class="bg-amber-400 h-1.5 transition-all duration-500" id="meta-progress-bar-corr" style="width: 0%"></div>
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1" id="meta-percentage">0% de meta alcanzada</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TIPOS DE VISITA -->
+                        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 transition-colors">
+                            <div class="mb-4">
+                                <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-layer-group text-purple-500"></i> TIPOS DE VISITA REALIZADAS <span class="text-slate-400 font-bold" id="tipos-year-label"></span>
+                                </h3>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Distribución de visitas realizadas por tipo en el año seleccionado.</p>
+                            </div>
+                            <div class="relative" id="tipos-chart-wrap" style="height: 180px;">
+                                <canvas id="tiposVisitaChart"></canvas>
+                            </div>
+                            <p id="tipos-empty" class="hidden text-center py-6 text-slate-400 dark:text-slate-500 italic text-sm">Sin visitas realizadas en este año.</p>
+                        </div>
+
+                        <!-- HISTORIAL DE VISITAS -->
+                        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col min-h-[400px] transition-colors overflow-hidden">
+                            <div class="p-4 bg-white dark:bg-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 dark:border-slate-700/50">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm"><i class="fa-solid fa-route mr-1.5 text-blue-500"></i>Historial General de Visitas Posventa</h4>
+                                    <p class="text-[11px] text-blue-600 dark:text-blue-400 font-semibold mt-0.5"><i class="fa-solid fa-hand-pointer mr-1"></i>Haz clic en una visita para ver su detalle.</p>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <button onclick="setHistFiltro('TODOS')" id="hflt-TODOS" class="hflt-btn px-2.5 py-1 rounded-md text-[11px] font-bold border bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800">Todos</button>
+                                    <button onclick="setHistFiltro('REALIZADO')" id="hflt-REALIZADO" class="hflt-btn px-2.5 py-1 rounded-md text-[11px] font-bold border bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700">Realizados</button>
+                                    <button onclick="setHistFiltro('PENDIENTE')" id="hflt-PENDIENTE" class="hflt-btn px-2.5 py-1 rounded-md text-[11px] font-bold border bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700">Pendientes</button>
+                                    <button onclick="setHistFiltro('CANCELADO')" id="hflt-CANCELADO" class="hflt-btn px-2.5 py-1 rounded-md text-[11px] font-bold border bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700">Cancelados</button>
+                                    <span class="text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded" id="cp-badge-visitas">0 registros</span>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto flex-1">
+                                <table class="w-full text-left border-collapse whitespace-nowrap">
+                                    <thead>
+                                        <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                                            <th class="py-3 px-5">ID Programación</th>
+                                            <th class="py-3 px-5">Fecha</th>
+                                            <th class="py-3 px-5">Tipo de Visita</th>
+                                            <th class="py-3 px-5">Responsable</th>
+                                            <th class="py-3 px-5 text-center">Estado</th>
+                                            <th class="py-3 px-5 text-center">Informe</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cp-table-visitas" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
             <!-- TAB 2: KANBAN PRIORIDADES VISITAS          -->
             <!-- ========================================== -->
             <section id="tab-kanban" class="tab-content h-full">
@@ -436,61 +668,346 @@
                     </div>
                 </div>
             </section>
-            
+
             <!-- ========================================== -->
-            <!-- TAB 5: API Y CONFIGURACIÓN                 -->
+            <!-- TAB: CALENDARIO PERSONAL POSVENTA          -->
             <!-- ========================================== -->
-            <section id="tab-api" class="tab-content space-y-6">
-                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 md:p-8 transition-colors">
-                    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-700">
-                        <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl shrink-0"><i class="fa-solid fa-link"></i></div>
-                        <div><h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">Conexión con Google Sheets</h3></div>
-                    </div>
-                    <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-400 p-4 rounded-lg flex items-start gap-3">
-                        <i class="fa-solid fa-circle-check mt-1 text-emerald-600 dark:text-emerald-500"></i>
-                        <div>
-                            <strong class="block mb-1">Módulos Conectados Exitosamente</strong>
-                            <p class="text-sm opacity-90">El sistema procesa y conecta las tablas SEDES (FrecuenciaVisitaPv) y PROGRAMACION PV para alimentar Frecuencias, Kanban y Calendario Proyectado de Posventa.</p>
+            <section id="tab-cal_tec" class="tab-content space-y-4 h-full">
+                <div class="hidden print:block mb-4 text-center border-b border-slate-300 pb-3">
+                    <h2 class="text-xl font-bold text-slate-800 uppercase tracking-wider">PROGRAMACIÓN DE VISITAS POSVENTA</h2>
+                    <p class="text-sm text-slate-600 mt-1 font-semibold" id="print-cal-tec-subtitle">Mes Año - Responsable</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-full print:border-none print:shadow-none transition-colors">
+                    <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center bg-purple-50/30 dark:bg-purple-900/10 print-hide">
+                        <div class="flex items-center gap-3 w-full md:w-auto justify-between">
+                            <button onclick="changeCalTecMonth(-1)" class="p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-400 transition shadow-sm"><i class="fa-solid fa-chevron-left"></i></button>
+                            <h3 id="cal-tec-month-label" class="font-bold text-lg text-slate-800 dark:text-slate-200 uppercase tracking-wider min-w-[150px] text-center">MES AÑO</h3>
+                            <button onclick="changeCalTecMonth(1)" class="p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-400 transition shadow-sm"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                            <div class="flex items-center gap-2 flex-1 md:flex-none">
+                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Responsable:</span>
+                                <select id="cal-tecnico-filter" onchange="renderGridCalendarioTec()" class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full md:w-52 p-2 shadow-sm">
+                                    <option value="Todos">Todo el Personal</option>
+                                </select>
+                            </div>
+                            <button id="btn-print-cal-tec" onclick="window.print()" class="hidden items-center gap-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm transition">
+                                <i class="fa-solid fa-print"></i> <span class="hidden md:inline">Imprimir</span>
+                            </button>
                         </div>
                     </div>
-                    
-                    <!-- Código Google Apps Script Recomendado -->
-                    <div class="mt-6 space-y-2">
-                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Código Recomendado para Google Apps Script (doGet):</span>
-                        <pre class="bg-slate-900 text-slate-300 text-xs p-4 rounded-lg overflow-x-auto font-mono select-all">
-function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  function obtenerDatosHoja(nombreHoja) {
-    var sheet = ss.getSheetByName(nombreHoja);
-    if (!sheet) return [];
-    var data = sheet.getDataRange().getValues();
-    if (data.length &lt;= 1) return [];
-    var headers = data[0];
-    var result = [];
-    for (var i = 1; i &lt; data.length; i++) {
-      var obj = {};
-      for (var j = 0; j &lt; headers.length; j++) {
-        obj[headers[j]] = data[i][j]; 
-      }
-      result.push(obj);
-    }
-    return result;
-  }
-  var respuesta = {
-    programacion: obtenerDatosHoja("PROGRAMACION"),
-    mantenimiento: obtenerDatosHoja("MANTENIMIENTO"),
-    comodato: obtenerDatosHoja("COMODATO"),
-    sedes: obtenerDatosHoja("SEDES"),
-    equipos: obtenerDatosHoja("EQUIPOS"), // Habilitado para consultar los costos comodatos unitarios
-    requerimiento: obtenerDatosHoja("REQUERIMIENTO"),
-    detalle_req: obtenerDatosHoja("DETALLE_REQ"),
-    repuestos: obtenerDatosHoja("REPUESTOS"),
-    programacion_pv: obtenerDatosHoja("PROGRAMACION PV") // Dashboard Posventa
-  };
-  return ContentService.createTextOutput(JSON.stringify(respuesta))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-                        </pre>
+
+                    <div class="p-4 overflow-x-auto print:p-0">
+                        <div class="min-w-[700px]">
+                            <div class="grid grid-cols-7 gap-2 mb-2 text-center">
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Lun</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Mar</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Mié</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Jue</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Vie</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Sáb</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Dom</div>
+                            </div>
+                            <div id="calendar-tec-grid" class="grid grid-cols-7 gap-2 calendar-grid-print"></div>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase justify-center print-hide">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-100 border border-emerald-300 dark:bg-emerald-900/50 dark:border-emerald-700"></span> Realizadas</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-100 border border-blue-300 dark:bg-blue-900/50 dark:border-blue-700"></span> Pendiente / Programada</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-100 border border-rose-300 dark:bg-rose-900/50 dark:border-rose-700"></span> Cancelado</span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-file-circle-exclamation text-amber-500 text-xs"></i> Informe pendiente</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- TAB: SEGUIMIENTO DE INFORMES               -->
+            <!-- ========================================== -->
+            <section id="tab-informes" class="tab-content space-y-6">
+
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">PERIODO VISITA:</span>
+                        <select id="inf-year-filter" onchange="renderInformes()" class="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md px-3 py-1.5 shadow-sm"><option value="TODOS">Todos los años</option></select>
+                        <select id="inf-month-filter" onchange="renderInformes()" class="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md px-3 py-1.5 shadow-sm">
+                            <option value="TODOS">Todos los meses</option>
+                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                            <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                            <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                        <select id="inf-resp-filter" onchange="renderInformes()" class="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md px-3 py-1.5 shadow-sm"><option value="TODOS">Todo el personal</option></select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Plazo de entrega:</span>
+                        <select id="inf-plazo" onchange="setPlazoInforme(this.value)" class="text-xs font-bold bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 rounded-md px-3 py-1.5 shadow-sm">
+                            <option value="0">0 días (mismo día)</option>
+                            <option value="1">1 día</option>
+                            <option value="2">2 días</option>
+                            <option value="3" selected>3 días</option>
+                            <option value="5">5 días</option>
+                            <option value="7">7 días</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-400"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Requeridos</span>
+                        <h3 class="text-2xl font-black text-slate-700 dark:text-slate-200 mt-1 pl-2" id="inf-kpi-req">0</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block">Visitas realizadas con informe</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Entregados</span>
+                        <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 pl-2" id="inf-kpi-ent">0</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block" id="inf-kpi-ent-pct">0%</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden cursor-pointer hover:shadow-md transition" onclick="setInfVista('PENDIENTES')">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Pendientes</span>
+                        <h3 class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 pl-2" id="inf-kpi-pend">0</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block">Sin entregar</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden cursor-pointer hover:shadow-md transition" onclick="setInfVista('PENDIENTES')">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-rose-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Atrasados</span>
+                        <h3 class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1 pl-2" id="inf-kpi-atr">0</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block">Pendientes fuera de plazo</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Prom. Entrega</span>
+                        <h3 class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 pl-2" id="inf-kpi-prom">-</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block">Días desde la visita</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-teal-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">A Tiempo</span>
+                        <h3 class="text-2xl font-black text-teal-600 dark:text-teal-400 mt-1 pl-2" id="inf-kpi-atiempo">-</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block" id="inf-kpi-atiempo-det">Entregados dentro del plazo</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-2"><i class="fa-solid fa-user-clock text-rose-500"></i> Cumplimiento por Responsable</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">Ordenado por informes pendientes y atraso.</p>
+                        <div class="overflow-x-auto max-h-[340px] overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead class="sticky top-0 bg-white dark:bg-slate-800">
+                                    <tr class="text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                        <th class="pb-2 pr-2">Responsable</th>
+                                        <th class="pb-2 pr-2 text-center">Pend.</th>
+                                        <th class="pb-2 pr-2 text-center">Máx. atraso</th>
+                                        <th class="pb-2 pr-2 text-center">Entreg.</th>
+                                        <th class="pb-2 pr-2 text-center">Prom. días</th>
+                                        <th class="pb-2 text-right">A tiempo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inf-resp-tbody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-2"><i class="fa-solid fa-chart-column text-teal-500"></i> Entregas por Mes de Visita</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">A tiempo vs fuera de plazo, y promedio de días de entrega.</p>
+                        <div style="height: 320px;"><canvas id="infMensualChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Tabla detalle -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div class="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 dark:border-slate-700/50">
+                        <div>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm"><i class="fa-solid fa-file-lines mr-1.5 text-blue-500"></i>Detalle de Informes</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Días contados desde el fin de la visita. Clic en una fila para ver la visita.</p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="setInfVista('PENDIENTES')" id="ivista-PENDIENTES" class="ivista-btn px-2.5 py-1 rounded-md text-[11px] font-bold border">Pendientes</button>
+                            <button onclick="setInfVista('ENTREGADOS')" id="ivista-ENTREGADOS" class="ivista-btn px-2.5 py-1 rounded-md text-[11px] font-bold border">Entregados</button>
+                            <button onclick="setInfVista('TODOS')" id="ivista-TODOS" class="ivista-btn px-2.5 py-1 rounded-md text-[11px] font-bold border">Todos</button>
+                            <span class="text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded" id="inf-badge">0 registros</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto max-h-[520px] overflow-y-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="sticky top-0">
+                                <tr class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                                    <th class="py-3 px-4">ID</th>
+                                    <th class="py-3 px-4">Cliente / Sede</th>
+                                    <th class="py-3 px-4">Fin Visita</th>
+                                    <th class="py-3 px-4">Responsable</th>
+                                    <th class="py-3 px-4">Entrega Informe</th>
+                                    <th class="py-3 px-4 text-center">Días</th>
+                                    <th class="py-3 px-4 text-center">Días Atraso</th>
+                                    <th class="py-3 px-4 text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inf-tbody" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- TAB: EVALUACIÓN DEL PERSONAL POSVENTA      -->
+            <!-- ========================================== -->
+            <section id="tab-evaluacion" class="tab-content space-y-6">
+
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">PERIODO:</span>
+                        <select id="ev-year-filter" onchange="renderEvaluacion()" class="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md px-3 py-1.5 shadow-sm"><option value="TODOS">Todos los años</option></select>
+                        <select id="ev-month-filter" onchange="renderEvaluacion()" class="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md px-3 py-1.5 shadow-sm">
+                            <option value="TODOS">Todos los meses</option>
+                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                            <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                            <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                        <button id="ev-spartan-toggle" onclick="toggleEvSpartan()" class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-md border shadow-sm transition bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
+                            <i class="fa-regular fa-square"></i> Incluir actividades internas (SPARTAN)
+                        </button>
+                    </div>
+                    <span class="text-[11px] text-slate-500 dark:text-slate-400"><i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>Plazo de informe: <strong id="ev-plazo-label">3 días</strong> (se cambia en Seguimiento de Informes)</span>
+                </div>
+
+                <!-- KPIs generales -->
+                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-purple-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Personal Activo</span>
+                        <h3 class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1 pl-2" id="ev-kpi-activos">0</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block">Con visitas en el período</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Visitas Realizadas</span>
+                        <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 pl-2" id="ev-kpi-visitas">0</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block">Total del equipo</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-teal-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Horas de Trabajo</span>
+                        <h3 class="text-2xl font-black text-teal-600 dark:text-teal-400 mt-1 pl-2" id="ev-kpi-horas">0h</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block">Total del equipo</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Informes Entregados</span>
+                        <h3 class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 pl-2" id="ev-kpi-informes">0%</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block" id="ev-kpi-informes-det">-</span>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2 block">Puntaje Promedio</span>
+                        <h3 class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 pl-2" id="ev-kpi-score">0</h3>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 pl-2 block">Sobre 100 puntos</span>
+                    </div>
+                </div>
+
+                <!-- Empleado del Mes -->
+                <div class="bg-gradient-to-br from-purple-600 to-indigo-700 dark:from-purple-700 dark:to-indigo-900 rounded-xl p-6 shadow-lg text-white relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 text-9xl opacity-10"><i class="fa-solid fa-trophy"></i></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center gap-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-20 h-20 rounded-full bg-white/15 border-2 border-white/40 flex items-center justify-center text-3xl font-black shrink-0" id="empmes-iniciales">--</div>
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-widest text-purple-200 flex items-center gap-1.5"><i class="fa-solid fa-trophy text-amber-300"></i> Empleado del Mes — <span id="empmes-periodo">Mes</span></span>
+                                <h2 class="text-2xl font-black mt-0.5" id="empmes-nombre">—</h2>
+                                <span class="inline-block mt-1 text-xs font-black bg-amber-400 text-amber-950 px-2 py-0.5 rounded" id="empmes-score">0 pts</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 md:pl-6 md:border-l md:border-white/20">
+                            <div class="text-center">
+                                <div class="text-2xl font-black" id="empmes-visitas">0</div>
+                                <div class="text-[10px] uppercase font-bold text-purple-200 mt-0.5">Visitas Realizadas</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-black" id="empmes-horas">0h</div>
+                                <div class="text-[10px] uppercase font-bold text-purple-200 mt-0.5">Horas de Trabajo</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-black" id="empmes-informes">0%</div>
+                                <div class="text-[10px] uppercase font-bold text-purple-200 mt-0.5">Informes Entregados</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-black" id="empmes-efectividad">0%</div>
+                                <div class="text-[10px] uppercase font-bold text-purple-200 mt-0.5">Efectividad</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative z-10 mt-4 flex flex-wrap gap-2" id="empmes-podio"></div>
+                    <p class="relative z-10 text-[10px] text-purple-200 mt-3 italic" id="empmes-nota">Mayor puntaje de evaluación del mes.</p>
+                </div>
+
+                <!-- Metodología -->
+                <details class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <summary class="cursor-pointer p-4 text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-indigo-500"></i> ¿Cómo se calcula el puntaje? (100 pts)</summary>
+                    <div class="px-5 pb-5 grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
+                        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-700"><p class="font-black text-emerald-600 dark:text-emerald-400 text-lg">25 pts</p><p class="font-bold text-slate-700 dark:text-slate-200">Visitas realizadas</p><p class="text-slate-500 dark:text-slate-400 mt-1">Proporcional al que más visitas realizó en el período.</p></div>
+                        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-700"><p class="font-black text-teal-600 dark:text-teal-400 text-lg">20 pts</p><p class="font-bold text-slate-700 dark:text-slate-200">Horas de trabajo</p><p class="text-slate-500 dark:text-slate-400 mt-1">Proporcional al que más horas registró.</p></div>
+                        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-700"><p class="font-black text-amber-600 dark:text-amber-400 text-lg">20 pts</p><p class="font-bold text-slate-700 dark:text-slate-200">Efectividad</p><p class="text-slate-500 dark:text-slate-400 mt-1">Realizadas ÷ (realizadas + canceladas + programadas vencidas sin realizar).</p></div>
+                        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-700"><p class="font-black text-blue-600 dark:text-blue-400 text-lg">20 pts</p><p class="font-bold text-slate-700 dark:text-slate-200">Entrega de informes</p><p class="text-slate-500 dark:text-slate-400 mt-1">Informes entregados ÷ informes requeridos.</p></div>
+                        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-700"><p class="font-black text-rose-600 dark:text-rose-400 text-lg">15 pts</p><p class="font-bold text-slate-700 dark:text-slate-200">Puntualidad</p><p class="text-slate-500 dark:text-slate-400 mt-1">Informes con fecha de entrega registrada dentro del plazo. Sin fechas registradas: se usa el % de entrega.</p></div>
+                        <p class="sm:col-span-5 text-slate-500 dark:text-slate-400">Calificación: <strong class="text-emerald-600">Excelente ≥ 85</strong> · <strong class="text-blue-600">Bueno 70–84</strong> · <strong class="text-amber-600">Regular 55–69</strong> · <strong class="text-rose-600">Por mejorar &lt; 55</strong>. Horas: TimeHorasPV (0–14 h) o la diferencia entre inicio y fin; si la visita dura varios días se consideran 8 h por día. En visitas compartidas, cada responsable recibe el crédito completo.</p>
+                    </div>
+                </details>
+
+                <!-- Gráficos -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm lg:col-span-2">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2"><i class="fa-solid fa-ranking-star text-purple-500"></i> Ranking de Evaluación (composición del puntaje)</h4>
+                        <div id="ev-ranking-wrap" style="height: 360px;"><canvas id="evRankingChart"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2"><i class="fa-solid fa-file-circle-check text-blue-500"></i> Informes por Responsable</h4>
+                        <div style="height: 320px;"><canvas id="evInformesChart"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2"><i class="fa-solid fa-business-time text-teal-500"></i> Visitas y Horas por Responsable</h4>
+                        <div style="height: 320px;"><canvas id="evVisitasHorasChart"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-500"></i> Especialización — Tipos de Visita</h4>
+                        <div style="height: 320px;"><canvas id="evEspecializacionChart"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-500"></i> Tendencia Mensual del Puntaje — Top 5 (<span id="ev-tend-year"></span>)</h4>
+                        <div style="height: 320px;"><canvas id="evTendenciaChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Tabla comparativa -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2"><i class="fa-solid fa-table-list text-slate-500"></i> Evaluación Completa del Personal</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm whitespace-nowrap">
+                            <thead>
+                                <tr class="text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                    <th class="pb-2 pr-3">#</th>
+                                    <th class="pb-2 pr-3">Responsable</th>
+                                    <th class="pb-2 pr-3 text-center">Realizadas</th>
+                                    <th class="pb-2 pr-3 text-center">Canceladas</th>
+                                    <th class="pb-2 pr-3 text-center">Vencidas</th>
+                                    <th class="pb-2 pr-3 text-center">Efectividad</th>
+                                    <th class="pb-2 pr-3 text-center">Horas</th>
+                                    <th class="pb-2 pr-3 text-center">h/visita</th>
+                                    <th class="pb-2 pr-3 text-center">Clientes</th>
+                                    <th class="pb-2 pr-3 text-center">Informes</th>
+                                    <th class="pb-2 pr-3 text-center">Pend. Inf.</th>
+                                    <th class="pb-2 pr-3 text-center">Prom. días</th>
+                                    <th class="pb-2 pr-3 text-center">A tiempo</th>
+                                    <th class="pb-2 pr-3 text-center">Puntaje</th>
+                                    <th class="pb-2 text-right">Calificación</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ev-tabla-tbody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -499,7 +1016,7 @@ function doGet(e) {
 
     <!-- MODAL DETALLE DE ACTIVIDAD (REUTILIZADO) -->
     <div id="modal-actividad" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 transition-opacity duration-300 opacity-0">
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 border dark:border-slate-700" id="modal-actividad-content">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-300 border dark:border-slate-700" id="modal-actividad-content">
             <div class="bg-purple-600 dark:bg-purple-700 p-4 flex justify-between items-center text-white" id="modal-header">
                 <div class="flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-purple-200 dark:text-purple-300"></i><h3 class="font-bold text-lg leading-none" id="modal-act-id">Visita</h3></div>
                 <button onclick="cerrarModalActividad()" class="text-purple-200 dark:text-purple-300 hover:text-white transition bg-purple-700/50 dark:bg-purple-800/50 hover:bg-purple-700 dark:hover:bg-purple-800 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -549,10 +1066,22 @@ function doGet(e) {
                     <p class="text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed whitespace-pre-line" id="modal-act-detalle">No registrado.</p>
                 </div>
 
+                <div id="modal-comentarios-container" class="bg-slate-50 dark:bg-slate-700/30 p-3.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-comment-dots mr-1"></i>Comentarios / Conclusiones</p>
+                    <p class="text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed whitespace-pre-line" id="modal-act-comentarios"></p>
+                </div>
+
+                <div id="modal-pendientes-container" class="bg-amber-50 dark:bg-amber-900/20 p-3.5 rounded-lg border border-amber-200 dark:border-amber-800/50">
+                    <p class="text-[10px] text-amber-600 dark:text-amber-400 uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-thumbtack mr-1"></i>Pendientes</p>
+                    <p class="text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed whitespace-pre-line" id="modal-act-pendientes"></p>
+                </div>
+
                 <div class="grid grid-cols-1 gap-4" id="modal-tech-section">
                     <div>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-users-gear mr-1"></i>Técnico(s) Asignado(s)</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-users-gear mr-1"></i>Responsable(s)</p>
                         <p class="text-slate-800 dark:text-slate-200 font-medium text-sm bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-600 px-3 py-2 rounded-lg" id="modal-act-tecnico">Técnico</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1 mt-3"><i class="fa-solid fa-file-lines mr-1"></i>Informe</p>
+                        <p class="text-slate-800 dark:text-slate-200 font-medium text-sm bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-600 px-3 py-2 rounded-lg" id="modal-act-informe">-</p>
                     </div>
                 </div>
             </div>
@@ -578,6 +1107,13 @@ function doGet(e) {
                 document.documentElement.classList.add('dark');
                 localStorage.setItem('color-theme', 'dark');
             }
+            const cli = document.getElementById('sel-cliente').value;
+            const sed = document.getElementById('sel-sede').value;
+            if (cli && sed) {
+                renderMonthlyVisitsChart(cli, sed, activeChartYear);
+                renderTiposVisitaChart(cli, sed, activeChartYear);
+            }
+            refreshActiveTab();
         }
 
         const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqlXgkj_Fv8Mjw9USgv9icHvqFJXO4PfJRRKN1YSPwvbJ25bEf0ZsfJOPAuiR7y7dU3A/exec";
@@ -636,6 +1172,12 @@ function doGet(e) {
             return m ? `${m[1].padStart(2, '0')}:${m[2]}` : s;
         }
 
+        // Devuelve HH:MM solo si el valor trae una hora real (00:00 = fecha sin hora registrada)
+        function horaSiValida(val) {
+            const t = formatTimeVal(val);
+            return (t && t !== '00:00' && /^\d{2}:\d{2}$/.test(t)) ? t : '';
+        }
+
         async function fetchRealData() {
             const loadingOverlay = document.getElementById('loading-overlay');
             const errorBanner = document.getElementById('error-banner');
@@ -654,7 +1196,7 @@ function doGet(e) {
                 const progPvRaw = data.programacion_pv || data.programacionPv || data['PROGRAMACION PV'] || data.PROGRAMACION_PV || [];
 
                 if (sedesRaw.length === 0) throw new Error("La tabla SEDES está vacía.");
-                if (progPvRaw.length === 0) throw new Error("No llegó la hoja PROGRAMACION PV. Agrega la línea programacion_pv al doGet (ver pestaña Conexión).");
+                if (progPvRaw.length === 0) throw new Error("No llegó la hoja PROGRAMACION PV. Agrega al doGet la línea: programacion_pv: obtenerDatosHoja('PROGRAMACION PV')");
 
                 // --- SEDES: solo interesa la frecuencia de posventa (no se considera DispEquipos) ---
                 const sedesPV = [];
@@ -682,24 +1224,33 @@ function doGet(e) {
                 progPvRaw.forEach(row => {
                     const cliente = String(getVal(row, ['ClientePv']) || "").trim().toUpperCase();
                     const diaRaw = getVal(row, ['DiaPv']);
-                    if (!cliente && !diaRaw) return; // filas vacías
+                    const fechaPrevRaw = getVal(row, ['FechaPrev', 'FechaPrev2']);
+                    if (!cliente && !diaRaw && !fechaPrevRaw) return; // filas vacías
 
                     dataProgramacionPvFull.push({
                         id: String(getVal(row, ['nProgramPv', 'IdProgPv']) || "S/ID").trim(),
                         cliente: cliente,
                         sede: String(getVal(row, ['SedePv']) || "").trim().toUpperCase(),
-                        fecha: toLocalDateStr(diaRaw),
+                        fecha: toLocalDateStr(diaRaw) || toLocalDateStr(fechaPrevRaw), // si no hay DiaPv se usa FechaPrev
                         fechaFin: toLocalDateStr(getVal(row, ['DiaFinPv'])),
-                        horaInicio: formatTimeVal(diaRaw),
-                        horaFin: formatTimeVal(getVal(row, ['DiaFinPv'])),
-                        detalle: String(getVal(row, ['DetallePv', 'ComentariosPv']) || "").trim(),
+                        horaInicio: horaSiValida(diaRaw),
+                        horaFin: horaSiValida(getVal(row, ['DiaFinPv'])),
+                        detalle: String(getVal(row, ['DetallePv', 'DetallePvPv']) || "").trim(),
                         estado: String(getVal(row, ['EstadoPv']) || "").trim().toUpperCase(),
                         tecnico: String(getVal(row, ['ResponsablePv']) || "Sin asignar").trim(),
-                        tipoVisita: String(getVal(row, ['TipoVisitaPv']) || "Posventa").trim()
+                        tipoVisita: String(getVal(row, ['TipoVisitaPv']) || "Posventa").trim(),
+                        tipoCliente: String(getVal(row, ['TipoClienPv']) || "").trim().toUpperCase(),
+                        estadoInforme: String(getVal(row, ['EstadoInforme']) || "").trim().toUpperCase(),
+                        comentarios: String(getVal(row, ['ComentariosPv']) || "").trim(),
+                        pendientes: String(getVal(row, ['PendientesPv']) || "").trim(),
+                        fechaInforme: toLocalDateStr(getVal(row, ['DiaInformePv'])),
+                        horasReg: parseFloat(getVal(row, ['TimeHorasPV'])) || 0
                     });
                 });
 
                 procesarProyecciones(sedesPV);
+                populateClientFilter();
+                refreshActiveTab();
 
             } catch (error) {
                 console.error("Error:", error);
@@ -774,6 +1325,898 @@ function doGet(e) {
             });
 
             actualizarUICompleta();
+        }
+
+        // =====================================================================
+        // MÓDULO: CONTROL DE CLIENTES POSVENTA (solo visitas de PROGRAMACION PV)
+        // =====================================================================
+        let activeChartYear = dToday.getFullYear();
+        let monthlyChartInstance = null;
+        let tiposChartInstance = null;
+        let histFiltro = 'TODOS';
+        const ESTADOS_REALIZADO = ['REALIZADO', 'TERMINADO', 'ATENDIDO'];
+
+        // Lista de clientes/sedes = SEDES + cualquier cliente/sede que tenga visitas en PROGRAMACION PV
+        function getParesClienteSede() {
+            const map = {};
+            dataSedesExtendida.forEach(s => { if (s.cliente && s.sede) map[s.cliente + '||' + s.sede] = { cliente: s.cliente, sede: s.sede }; });
+            dataProgramacionPvFull.forEach(p => { if (p.cliente && p.sede) map[p.cliente + '||' + p.sede] = { cliente: p.cliente, sede: p.sede }; });
+            return Object.values(map);
+        }
+
+        function populateClientFilter() {
+            const selCliente = document.getElementById('sel-cliente');
+            const prev = selCliente.value;
+            const clientes = Array.from(new Set(getParesClienteSede().map(p => p.cliente))).sort();
+
+            let opts = `<option value="">-- Elige un cliente --</option>`;
+            clientes.forEach(c => { opts += `<option value="${c}">${c}</option>`; });
+            selCliente.innerHTML = opts;
+
+            if (prev && clientes.includes(prev)) {
+                selCliente.value = prev;
+                const prevSede = document.getElementById('sel-sede').value;
+                updateSedeDropdown();
+                if (prevSede) { document.getElementById('sel-sede').value = prevSede; renderClientProfile(); }
+                return;
+            }
+            document.getElementById('sel-sede').innerHTML = `<option value="">-- Elige una sede --</option>`;
+            document.getElementById('sel-sede').disabled = true;
+            document.getElementById('cliente-profile-wrapper').classList.add('hidden');
+            document.getElementById('cliente-empty-state').classList.remove('hidden');
+        }
+
+        function updateSedeDropdown() {
+            const selCliente = document.getElementById('sel-cliente').value;
+            const selSede = document.getElementById('sel-sede');
+
+            document.getElementById('cliente-profile-wrapper').classList.add('hidden');
+            document.getElementById('cliente-empty-state').classList.remove('hidden');
+
+            if (!selCliente) {
+                selSede.innerHTML = `<option value="">-- Elige una sede --</option>`;
+                selSede.disabled = true;
+                return;
+            }
+
+            // Se indica cuántas visitas de posventa tiene cada sede para orientar la selección
+            const sedes = Array.from(new Set(getParesClienteSede().filter(p => p.cliente === selCliente).map(p => p.sede))).sort();
+            let opts = `<option value="">-- Elige una sede --</option>`;
+            sedes.forEach(s => {
+                const n = dataProgramacionPvFull.filter(p => p.cliente === selCliente && p.sede === s).length;
+                opts += `<option value="${s}">${s} (${n} visitas)</option>`;
+            });
+            selSede.innerHTML = opts;
+            selSede.disabled = false;
+            if (sedes.length === 1) { selSede.value = sedes[0]; renderClientProfile(); }
+        }
+
+        function getVisitasSede(cliente, sede) {
+            return dataProgramacionPvFull.filter(p => p.cliente === cliente && p.sede === sede);
+        }
+
+        function renderClientProfile() {
+            const cliente = document.getElementById('sel-cliente').value;
+            const sede = document.getElementById('sel-sede').value;
+            const wrapper = document.getElementById('cliente-profile-wrapper');
+            const emptyState = document.getElementById('cliente-empty-state');
+
+            if (!cliente || !sede) {
+                wrapper.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            wrapper.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            const sedeInfo = dataSedesExtendida.find(s => s.cliente === cliente && s.sede === sede) || {};
+            const visitas = getVisitasSede(cliente, sede);
+            const realizadas = visitas.filter(v => ESTADOS_REALIZADO.includes(v.estado));
+            const ultimaVis = [...visitas].filter(v => v.fecha).sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+
+            document.getElementById('cp-sede-name').innerText = sede;
+            document.getElementById('cp-cliente-name').innerText = cliente;
+            document.getElementById('cp-tipo').innerText = (ultimaVis && ultimaVis.tipoCliente) || sedeInfo.tipo || "SIN TIPO";
+            document.getElementById('cp-frecuencia').innerText = sedeInfo.frecuencia ? `Cada ${sedeInfo.frecuencia} días` : "No definida";
+            document.getElementById('cp-direccion').innerText = sedeInfo.ubicacion || "Ubicación no registrada.";
+
+            // Estado de frecuencia (mismo cálculo del módulo Frecuencias)
+            const proy = dataProyectada.find(p => p.cliente === cliente && p.sede === sede);
+            const badge = document.getElementById('cp-estado-frec');
+            const ultimaReal = [...realizadas].filter(v => v.fecha).sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+            document.getElementById('cp-ultima').innerText = ultimaReal ? formatDateStr(ultimaReal.fecha) : 'Sin registro';
+            document.getElementById('cp-proxima').innerText = (proy && proy.proxima) ? formatDateStr(proy.proxima) : '-';
+            const estilos = {
+                'ATRASADO': ['bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800/50', 'Atrasado'],
+                'PENDIENTE': ['bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/50', 'Próximo'],
+                'AL DÍA': ['bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50', 'Al día'],
+                'SIN HISTORIAL': ['bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600', 'Sin historial']
+            };
+            const est = proy ? estilos[proy.estado] : ['bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600', 'Sin frecuencia PV'];
+            badge.className = `text-xs font-bold px-2.5 py-1 rounded-full border shadow-sm ${est[0]}`;
+            badge.innerText = est[1];
+
+            // Responsable habitual (más visitas realizadas)
+            const resp = {};
+            realizadas.forEach(v => { (v.tecnico || '').split(',').map(t => t.trim()).filter(Boolean).forEach(t => resp[t] = (resp[t] || 0) + 1); });
+            const topResp = Object.entries(resp).sort((a, b) => b[1] - a[1]);
+            document.getElementById('cp-responsable').innerText = topResp.length ? topResp[0][0] : 'Sin asignar';
+            document.getElementById('cp-responsable-det').innerText = topResp.length ? `${topResp[0][1]} de ${realizadas.length} visitas realizadas` + (topResp.length > 1 ? ` · también: ${topResp.slice(1, 3).map(r => r[0]).join(', ')}` : '') : '';
+
+            document.getElementById('cp-n-realizadas').innerText = realizadas.length;
+            document.getElementById('cp-n-pendientes').innerText = visitas.filter(v => v.estado === 'PENDIENTE' || !v.estado).length;
+            document.getElementById('cp-n-canceladas').innerText = visitas.filter(v => v.estado === 'CANCELADO').length;
+
+            renderHistorialVisitas();
+            renderYearSelector(cliente, sede);
+            renderMonthlyVisitsChart(cliente, sede, activeChartYear);
+            renderTiposVisitaChart(cliente, sede, activeChartYear);
+        }
+
+        function setHistFiltro(f) {
+            histFiltro = f;
+            document.querySelectorAll('.hflt-btn').forEach(b => {
+                b.classList.remove('bg-slate-800', 'text-white', 'border-slate-800', 'dark:bg-slate-200', 'dark:text-slate-800');
+                b.classList.add('bg-white', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700');
+            });
+            const a = document.getElementById(`hflt-${f}`);
+            if (a) {
+                a.classList.remove('bg-white', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700');
+                a.classList.add('bg-slate-800', 'text-white', 'border-slate-800', 'dark:bg-slate-200', 'dark:text-slate-800');
+            }
+            renderHistorialVisitas();
+        }
+
+        function renderHistorialVisitas() {
+            const cliente = document.getElementById('sel-cliente').value;
+            const sede = document.getElementById('sel-sede').value;
+            const tb = document.getElementById('cp-table-visitas');
+            let visitas = getVisitasSede(cliente, sede);
+            if (histFiltro === 'REALIZADO') visitas = visitas.filter(v => ESTADOS_REALIZADO.includes(v.estado));
+            else if (histFiltro === 'PENDIENTE') visitas = visitas.filter(v => v.estado === 'PENDIENTE' || !v.estado);
+            else if (histFiltro === 'CANCELADO') visitas = visitas.filter(v => v.estado === 'CANCELADO');
+            visitas.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+
+            document.getElementById('cp-badge-visitas').innerText = `${visitas.length} registros`;
+            if (visitas.length === 0) {
+                tb.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 dark:text-slate-500 italic">No hay visitas de posventa para esta sede${histFiltro !== 'TODOS' ? ' con este estado' : ''}.</td></tr>`;
+                return;
+            }
+            let html = '';
+            visitas.forEach(v => {
+                let bClass = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800";
+                if (ESTADOS_REALIZADO.includes(v.estado)) bClass = "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800";
+                else if (v.estado === "CANCELADO") bClass = "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800";
+
+                let infClass = "text-slate-400 dark:text-slate-500";
+                if (v.estadoInforme === 'TERMINADO') infClass = "text-emerald-600 dark:text-emerald-400";
+                else if (v.estadoInforme && v.estadoInforme !== 'NO REQUIERE') infClass = "text-amber-600 dark:text-amber-400";
+
+                html += `
+                    <tr onclick="abrirModalActividadById('${v.id}', 'HIST')" class="hover:bg-blue-50/50 dark:hover:bg-slate-700/40 transition cursor-pointer">
+                        <td class="py-3 px-5 font-bold text-slate-800 dark:text-slate-200 text-xs">${v.id}</td>
+                        <td class="py-3 px-5 font-medium text-slate-600 dark:text-slate-400">${v.fecha ? formatDateStr(v.fecha) : '-'}</td>
+                        <td class="py-3 px-5"><span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 text-[10px] font-bold text-slate-600 dark:text-slate-300">${v.tipoVisita}</span></td>
+                        <td class="py-3 px-5 text-slate-600 dark:text-slate-400">${v.tecnico}</td>
+                        <td class="py-3 px-5 text-center"><span class="px-2.5 py-0.5 rounded text-[10px] uppercase font-bold border ${bClass}">${v.estado || 'PENDIENTE'}</span></td>
+                        <td class="py-3 px-5 text-center text-[10px] font-bold uppercase ${infClass}">${v.estadoInforme || '-'}</td>
+                    </tr>`;
+            });
+            tb.innerHTML = html;
+        }
+
+        function renderYearSelector(cliente, sede) {
+            const container = document.getElementById('chart-year-selector');
+            if (!container) return;
+            const yearsSet = new Set([new Date().getFullYear()]);
+            getVisitasSede(cliente, sede).forEach(p => {
+                if (p.fecha) { const yr = parseInt(p.fecha.substring(0, 4)); if (!isNaN(yr)) yearsSet.add(yr); }
+            });
+            const sortedYears = Array.from(yearsSet).sort((a, b) => b - a);
+            container.innerHTML = '';
+            sortedYears.forEach(yr => {
+                const btn = document.createElement('button');
+                btn.className = `px-2.5 py-1 text-xs font-bold rounded-md transition ${yr === activeChartYear ? 'bg-blue-600 text-white dark:bg-blue-500 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'}`;
+                btn.innerText = yr;
+                btn.onclick = () => {
+                    activeChartYear = yr;
+                    renderYearSelector(cliente, sede);
+                    renderMonthlyVisitsChart(cliente, sede, yr);
+                    renderTiposVisitaChart(cliente, sede, yr);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function chartColors() {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                isDark,
+                grid: isDark ? 'rgba(71, 85, 105, 0.4)' : 'rgba(226, 232, 240, 0.8)',
+                text: isDark ? '#cbd5e1' : '#475569',
+                tooltip: {
+                    backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                    titleColor: isDark ? '#f8fafc' : '#0f172a',
+                    bodyColor: isDark ? '#cbd5e1' : '#475569',
+                    borderColor: isDark ? '#334155' : '#e2e8f0',
+                    borderWidth: 1
+                }
+            };
+        }
+
+        // Misma lógica del dashboard de operaciones: la 1.ª visita realizada del mes cuenta para el plan,
+        // las siguientes del mismo mes son adicionales. Meta = 365 / FrecuenciaVisitaPv.
+        function renderMonthlyVisitsChart(cliente, sede, year) {
+            const ctx = document.getElementById('monthlyVisitsChart');
+            if (!ctx) return;
+
+            const sedeObj = dataSedesExtendida.find(s => s.cliente === cliente && s.sede === sede) || {};
+            const frecuencia = sedeObj.frecuencia || 0;
+
+            let metaAnual = 0, metaMensual = 0;
+            if (frecuencia > 0) {
+                metaAnual = Math.round(365 / frecuencia);
+                metaMensual = parseFloat((30.41 / frecuencia).toFixed(2));
+                document.getElementById('meta-calc-details').innerText = `Basado en FrecuenciaVisitaPv de ${frecuencia} días`;
+            } else {
+                document.getElementById('meta-calc-details').innerText = "FrecuenciaVisitaPv no registrada.";
+            }
+            document.getElementById('meta-visitas-anual').innerText = metaAnual;
+
+            const visitsRealizadas = getVisitasSede(cliente, sede)
+                .filter(p => ESTADOS_REALIZADO.includes(p.estado) && p.fecha && parseInt(p.fecha.substring(0, 4)) === year)
+                .sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+            const planPorMes = Array(12).fill(0);
+            const extraPorMes = Array(12).fill(0);
+            const mesesConPlan = new Set();
+            visitsRealizadas.forEach(v => {
+                const mIdx = parseInt(v.fecha.substring(5, 7)) - 1;
+                if (mIdx >= 0 && mIdx <= 11) {
+                    if (!mesesConPlan.has(mIdx)) { planPorMes[mIdx]++; mesesConPlan.add(mIdx); }
+                    else extraPorMes[mIdx]++;
+                }
+            });
+
+            const totalPlan = planPorMes.reduce((a, b) => a + b, 0);
+            const totalExtra = extraPorMes.reduce((a, b) => a + b, 0);
+            document.getElementById('ejecucion-preventivas').innerText = totalPlan;
+            document.getElementById('ejecucion-correctivas').innerText = totalExtra;
+
+            const pctPlan = metaAnual > 0 ? Math.min(Math.round((totalPlan / metaAnual) * 100), 100) : 0;
+            const pctExtra = metaAnual > 0 ? Math.round((totalExtra / metaAnual) * 100) : 0;
+            document.getElementById('meta-progress-bar-prev').style.width = `${pctPlan}%`;
+            document.getElementById('meta-progress-bar-corr').style.width = `${Math.min(pctExtra, 100 - pctPlan)}%`;
+            document.getElementById('meta-percentage').innerText = metaAnual > 0 ? `${pctPlan}% de meta (plan) | ${pctExtra}% adicional` : 'Sin meta: registra FrecuenciaVisitaPv';
+
+            const c = chartColors();
+            const datasets = [
+                { label: 'Visitas en Plan', data: planPorMes, backgroundColor: c.isDark ? 'rgba(16, 185, 129, 0.85)' : 'rgba(16, 185, 129, 0.95)', borderColor: '#10b981', borderWidth: 1, stack: 'Stack 0' },
+                { label: 'Visitas Adicionales', data: extraPorMes, backgroundColor: c.isDark ? 'rgba(245, 158, 11, 0.85)' : 'rgba(245, 158, 11, 0.95)', borderColor: '#f59e0b', borderWidth: 1, stack: 'Stack 0' }
+            ];
+            if (metaMensual > 0) {
+                datasets.push({ label: 'Meta Mensual', data: Array(12).fill(metaMensual), type: 'line', borderColor: '#3b82f6', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, tension: 0 });
+            }
+
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+            if (typeof Chart === 'undefined') return;
+            monthlyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'], datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { display: true, position: 'top', labels: { color: c.text, font: { size: 10, weight: 'bold' } } }, tooltip: c.tooltip },
+                    scales: {
+                        y: { stacked: true, beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.text, stepSize: 1, font: { size: 10 } } },
+                        x: { stacked: true, grid: { display: false }, ticks: { color: c.text, font: { size: 10, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        function renderTiposVisitaChart(cliente, sede, year) {
+            const ctx = document.getElementById('tiposVisitaChart');
+            if (!ctx) return;
+            document.getElementById('tipos-year-label').innerText = `· ${year}`;
+
+            const conteo = {};
+            getVisitasSede(cliente, sede)
+                .filter(p => ESTADOS_REALIZADO.includes(p.estado) && p.fecha && parseInt(p.fecha.substring(0, 4)) === year)
+                .forEach(p => { const t = p.tipoVisita || 'SIN TIPO'; conteo[t] = (conteo[t] || 0) + 1; });
+            const entries = Object.entries(conteo).sort((a, b) => b[1] - a[1]);
+
+            if (tiposChartInstance) { tiposChartInstance.destroy(); tiposChartInstance = null; }
+            const wrap = document.getElementById('tipos-chart-wrap');
+            const empty = document.getElementById('tipos-empty');
+            if (entries.length === 0) { wrap.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+            wrap.classList.remove('hidden'); empty.classList.add('hidden');
+            wrap.style.height = `${Math.max(120, entries.length * 34 + 30)}px`;
+            if (typeof Chart === 'undefined') return;
+
+            const c = chartColors();
+            tiposChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: entries.map(e => e[0]), datasets: [{ label: 'Visitas', data: entries.map(e => e[1]), backgroundColor: c.isDark ? 'rgba(139, 92, 246, 0.8)' : 'rgba(139, 92, 246, 0.9)', borderRadius: 4, barThickness: 18 }] },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: c.tooltip },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.text, stepSize: 1, font: { size: 10 } } },
+                        y: { grid: { display: false }, ticks: { color: c.text, font: { size: 10, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        // =====================================================================
+        // UTILIDADES COMPARTIDAS: PERSONAL, HORAS E INFORMES
+        // =====================================================================
+        const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        let PLAZO_INFORME = 3; // días permitidos entre el fin de la visita y la entrega del informe
+        let calTecDate = new Date();
+        let evIncludeSpartan = false;
+        let infVista = 'PENDIENTES';
+        const chartsPV = {};
+
+        function destroyChartPV(key) { if (chartsPV[key]) { chartsPV[key].destroy(); chartsPV[key] = null; } }
+
+        function splitResp(str) {
+            if (!str || str.trim().toUpperCase() === 'SIN ASIGNAR') return [];
+            return str.split(/,| y | \/ /).map(t => t.trim()).filter(t => t);
+        }
+
+        function esRealizado(v) { return ESTADOS_REALIZADO.includes(v.estado); }
+        function esPendienteVisita(v) { return v.estado === 'PENDIENTE' || !v.estado; }
+        function esInterno(v) { return (v.cliente || '').includes('SPARTAN CHEMICAL'); }
+
+        // Diferencia en días calendario entre dos fechas 'YYYY-MM-DD'
+        function diasEntre(desde, hasta) {
+            if (!desde || !hasta) return null;
+            const a = Date.UTC(+desde.substr(0, 4), +desde.substr(5, 2) - 1, +desde.substr(8, 2));
+            const b = Date.UTC(+hasta.substr(0, 4), +hasta.substr(5, 2) - 1, +hasta.substr(8, 2));
+            return Math.round((b - a) / 86400000);
+        }
+
+        // Horas de trabajo de una visita:
+        // 1) TimeHorasPV si está entre 0 y 14 h; 2) diferencia real entre inicio y fin si da 0-14 h;
+        // 3) visita de varios días: 8 h por día (máx. 21 días); 4) sin dato: 0.
+        function horasVisita(v) {
+            if (v.horasReg > 0 && v.horasReg <= 14) return v.horasReg;
+            if (v.fecha && v.horaInicio && v.horaFin) {
+                const [h1, m1] = v.horaInicio.split(':').map(Number);
+                const [h2, m2] = v.horaFin.split(':').map(Number);
+                const total = diasEntre(v.fecha, v.fechaFin || v.fecha) * 24 + ((h2 * 60 + m2) - (h1 * 60 + m1)) / 60;
+                if (total > 0 && total <= 14) return total; // incluye visitas que cruzan la medianoche
+            }
+            if (v.fecha && v.fechaFin && v.fechaFin > v.fecha) {
+                const d = diasEntre(v.fecha, v.fechaFin) + 1;
+                if (d > 1 && d <= 21) return d * 8; // viaje / visita de varios días: 8 h por día
+            }
+            return 0;
+        }
+
+        // Estado del informe de una visita.
+        // Solo requieren informe las visitas REALIZADAS cuyo EstadoInforme no sea "NO REQUIERE".
+        function infoInforme(v) {
+            if (!esRealizado(v) || v.estadoInforme === 'NO REQUIERE') return { requerido: false };
+            const base = (v.fechaFin && v.fecha && v.fechaFin >= v.fecha) ? v.fechaFin : v.fecha;
+            const entregado = v.estadoInforme === 'TERMINADO';
+            if (entregado) {
+                if (v.fechaInforme && base) {
+                    const dias = Math.max(0, diasEntre(base, v.fechaInforme));
+                    const atraso = Math.max(0, dias - PLAZO_INFORME);
+                    return { requerido: true, entregado: true, base, dias, atraso, estado: atraso > 0 ? 'ENTREGADO TARDE' : 'ENTREGADO A TIEMPO' };
+                }
+                return { requerido: true, entregado: true, base, dias: null, atraso: null, estado: 'ENTREGADO SIN FECHA' };
+            }
+            const dias = base ? Math.max(0, diasEntre(base, TODAY_STR)) : null;
+            const atraso = dias !== null ? Math.max(0, dias - PLAZO_INFORME) : null;
+            return { requerido: true, entregado: false, base, dias, atraso, estado: atraso > 0 ? 'PENDIENTE ATRASADO' : 'PENDIENTE EN PLAZO' };
+        }
+
+        function setPlazoInforme(val) {
+            PLAZO_INFORME = parseInt(val) || 0;
+            const lbl = document.getElementById('ev-plazo-label');
+            if (lbl) lbl.innerText = `${PLAZO_INFORME} ${PLAZO_INFORME === 1 ? 'día' : 'días'}`;
+            renderInformes();
+        }
+
+        function fillYearSelect(id, defaultActual) {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            const prev = sel.dataset.init ? sel.value : (defaultActual ? String(yyyy) : 'TODOS');
+            sel.dataset.init = '1';
+            const years = Array.from(new Set(dataProgramacionPvFull.filter(p => p.fecha).map(p => p.fecha.substring(0, 4)))).sort().reverse();
+            sel.innerHTML = `<option value="TODOS">Todos los años</option>` + years.map(y => `<option value="${y}">${y}</option>`).join('');
+            sel.value = (prev === 'TODOS' || years.includes(prev)) ? prev : 'TODOS';
+        }
+
+        function periodoOK(fecha, yearId, monthId) {
+            if (!fecha) return false;
+            const y = document.getElementById(yearId).value, m = document.getElementById(monthId).value;
+            return (y === 'TODOS' || fecha.substring(0, 4) === y) && (m === 'TODOS' || fecha.substring(5, 7) === m);
+        }
+
+        function listaPersonal() {
+            const s = new Set();
+            dataProgramacionPvFull.forEach(p => splitResp(p.tecnico).forEach(t => s.add(t)));
+            return Array.from(s).sort();
+        }
+
+        // =====================================================================
+        // MÓDULO: CALENDARIO DEL PERSONAL POSVENTA
+        // =====================================================================
+        function changeCalTecMonth(offset) {
+            calTecDate.setDate(1);
+            calTecDate.setMonth(calTecDate.getMonth() + offset);
+            renderGridCalendarioTec();
+        }
+
+        function renderGridCalendarioTec() {
+            const grid = document.getElementById('calendar-tec-grid');
+            const selectTecnico = document.getElementById('cal-tecnico-filter');
+            if (!grid) return;
+
+            const year = calTecDate.getFullYear();
+            const month = calTecDate.getMonth();
+            const selectedTec = selectTecnico.value || 'Todos';
+            document.getElementById('cal-tec-month-label').innerText = `${MONTH_NAMES[month]} ${year}`;
+            document.getElementById('print-cal-tec-subtitle').innerText = `${MONTH_NAMES[month]} ${year} - ${selectedTec === 'Todos' ? 'Todo el Personal' : selectedTec}`;
+
+            let opts = `<option value="Todos">Todo el Personal</option>`;
+            listaPersonal().forEach(t => { opts += `<option value="${t}" ${selectedTec === t ? 'selected' : ''}>${t}</option>`; });
+            selectTecnico.innerHTML = opts;
+            const currentTec = selectTecnico.value;
+
+            const btnPrint = document.getElementById('btn-print-cal-tec');
+            btnPrint.classList.toggle('hidden', currentTec === 'Todos');
+            btnPrint.classList.toggle('flex', currentTec !== 'Todos');
+
+            let html = '';
+            const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let i = 0; i < firstDayIndex; i++) html += `<div class="bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-lg min-h-[6rem] sm:min-h-[8rem]"></div>`;
+
+            const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+            const candidatas = dataProgramacionPvFull.filter(v => v.fecha &&
+                (currentTec === 'Todos' || splitResp(v.tecnico).includes(currentTec)) &&
+                (v.fecha.substring(0, 7) <= monthPrefix) && ((v.fechaFin && v.fechaFin > v.fecha ? v.fechaFin : v.fecha).substring(0, 7) >= monthPrefix));
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const currentDateStr = `${monthPrefix}-${String(d).padStart(2, '0')}`;
+                const isToday = currentDateStr === TODAY_STR;
+
+                const visitasDia = candidatas.filter(v => {
+                    if (v.fechaFin && v.fechaFin > v.fecha && diasEntre(v.fecha, v.fechaFin) <= 31) {
+                        return currentDateStr >= v.fecha && currentDateStr <= v.fechaFin;
+                    }
+                    return v.fecha === currentDateStr;
+                });
+
+                let visitasHtml = '';
+                visitasDia.forEach(v => {
+                    let badgeClass = "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800";
+                    let printClass = "print-ev-pendiente";
+                    if (esRealizado(v)) {
+                        badgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800";
+                        printClass = "print-ev-realizado";
+                    } else if (v.estado === "CANCELADO") {
+                        badgeClass = "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800";
+                        printClass = "print-ev-cancelado";
+                    }
+                    const inf = infoInforme(v);
+                    const infIcon = (inf.requerido && !inf.entregado) ? `<i class="fa-solid fa-file-circle-exclamation text-amber-500 mr-0.5" title="Informe pendiente (${inf.dias} ${inf.dias === 1 ? 'día' : 'días'})"></i>` : '';
+                    const nombres = splitResp(v.tecnico).map(t => t.split(' ')[0]).join(', ') || 'S/A';
+                    visitasHtml += `
+                        <div onclick="abrirModalActividadById('${v.id}', 'HIST')"
+                             class="tec-event tec-event-print text-[9px] sm:text-[10px] p-1 mb-1 rounded cursor-pointer transition transform hover:scale-[1.02] shadow-sm flex flex-col gap-0.5 ${badgeClass} ${printClass}" title="${v.estado || 'PENDIENTE'} · ${v.tipoVisita}">
+                            <div class="screen-only truncate">${infIcon}<span class="font-bold opacity-75">${currentTec === 'Todos' ? nombres + ':' : ''}</span> <span class="font-bold">${v.cliente}</span></div>
+                            <div class="screen-only truncate text-[8.5px] opacity-90"><i class="fa-solid fa-location-dot mr-1"></i>${v.sede || '-'}</div>
+                            <div class="print-only font-bold text-[8px] leading-tight text-slate-900">${v.cliente}</div>
+                            <div class="print-only text-[7px] leading-none text-slate-700">${v.sede || ''}</div>
+                        </div>`;
+                });
+
+                html += `
+                    <div class="bg-white dark:bg-slate-800 border ${isToday ? 'border-purple-400 ring-1 ring-purple-400 dark:border-purple-500 dark:ring-purple-500 print:border-purple-600 print:ring-2' : 'border-slate-200 dark:border-slate-700'} rounded-lg min-h-[6rem] sm:min-h-[8rem] p-1.5 flex flex-col transition-all hover:shadow-md">
+                        <span class="text-xs font-bold ${isToday ? 'text-white bg-purple-600 w-6 h-6 flex items-center justify-center rounded-full shadow-sm print:bg-purple-600 print:text-white' : 'text-slate-500 dark:text-slate-400'} mb-1">${d}</span>
+                        <div class="flex-1 pr-1">${visitasHtml}</div>
+                    </div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        // =====================================================================
+        // MÓDULO: SEGUIMIENTO DE INFORMES
+        // =====================================================================
+        function populateInformesFilters() {
+            fillYearSelect('inf-year-filter');
+            const sel = document.getElementById('inf-resp-filter');
+            const prev = sel.value;
+            const pers = listaPersonal();
+            sel.innerHTML = `<option value="TODOS">Todo el personal</option>` + pers.map(p => `<option value="${p}">${p}</option>`).join('');
+            sel.value = pers.includes(prev) ? prev : 'TODOS';
+        }
+
+        function setInfVista(v) {
+            infVista = v;
+            renderInformes();
+        }
+
+        function renderInformes() {
+            if (!document.getElementById('inf-tbody')) return;
+            const resp = document.getElementById('inf-resp-filter').value;
+
+            const regs = dataProgramacionPvFull
+                .filter(v => periodoOK(v.fecha, 'inf-year-filter', 'inf-month-filter'))
+                .filter(v => resp === 'TODOS' || splitResp(v.tecnico).includes(resp))
+                .map(v => ({ v, inf: infoInforme(v) }))
+                .filter(r => r.inf.requerido);
+
+            const entregados = regs.filter(r => r.inf.entregado);
+            const pendientes = regs.filter(r => !r.inf.entregado);
+            const atrasados = pendientes.filter(r => r.inf.atraso > 0);
+            const conFecha = entregados.filter(r => r.inf.dias !== null);
+            const aTiempo = conFecha.filter(r => r.inf.atraso === 0);
+
+            document.getElementById('inf-kpi-req').innerText = regs.length;
+            document.getElementById('inf-kpi-ent').innerText = entregados.length;
+            document.getElementById('inf-kpi-ent-pct').innerText = regs.length ? `${Math.round(entregados.length / regs.length * 100)}% del total` : '-';
+            document.getElementById('inf-kpi-pend').innerText = pendientes.length;
+            document.getElementById('inf-kpi-atr').innerText = atrasados.length;
+            document.getElementById('inf-kpi-prom').innerText = conFecha.length ? (conFecha.reduce((a, r) => a + r.inf.dias, 0) / conFecha.length).toFixed(1) + ' d' : '-';
+            document.getElementById('inf-kpi-atiempo').innerText = conFecha.length ? `${Math.round(aTiempo.length / conFecha.length * 100)}%` : '-';
+            document.getElementById('inf-kpi-atiempo-det').innerText = conFecha.length ? `${aTiempo.length} de ${conFecha.length} con fecha registrada` : 'Sin fechas de entrega registradas';
+
+            // --- Por responsable ---
+            const porResp = {};
+            regs.forEach(r => splitResp(r.v.tecnico).forEach(t => {
+                if (resp !== 'TODOS' && t !== resp) return;
+                if (!porResp[t]) porResp[t] = { pend: 0, maxAtr: 0, ent: 0, sumDias: 0, nDias: 0, aTiempo: 0 };
+                const s = porResp[t];
+                if (r.inf.entregado) {
+                    s.ent++;
+                    if (r.inf.dias !== null) { s.sumDias += r.inf.dias; s.nDias++; if (r.inf.atraso === 0) s.aTiempo++; }
+                } else {
+                    s.pend++;
+                    s.maxAtr = Math.max(s.maxAtr, r.inf.atraso || 0);
+                }
+            }));
+            const filasResp = Object.entries(porResp).sort((a, b) => (b[1].pend - a[1].pend) || (b[1].maxAtr - a[1].maxAtr));
+            document.getElementById('inf-resp-tbody').innerHTML = filasResp.length ? filasResp.map(([t, s]) => {
+                const pctT = s.nDias ? Math.round(s.aTiempo / s.nDias * 100) : null;
+                const pctCls = pctT === null ? 'text-slate-400' : pctT >= 80 ? 'text-emerald-600 dark:text-emerald-400' : pctT >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
+                return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer" onclick="document.getElementById('inf-resp-filter').value='${t}'; renderInformes();">
+                    <td class="py-2 pr-2 font-semibold text-slate-700 dark:text-slate-200">${t}</td>
+                    <td class="py-2 pr-2 text-center font-bold ${s.pend ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}">${s.pend}</td>
+                    <td class="py-2 pr-2 text-center font-bold ${s.maxAtr > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}">${s.maxAtr > 0 ? s.maxAtr + ' d' : '-'}</td>
+                    <td class="py-2 pr-2 text-center text-slate-600 dark:text-slate-300">${s.ent}</td>
+                    <td class="py-2 pr-2 text-center text-slate-600 dark:text-slate-300">${s.nDias ? (s.sumDias / s.nDias).toFixed(1) : '-'}</td>
+                    <td class="py-2 text-right font-bold ${pctCls}">${pctT === null ? '-' : pctT + '%'}</td>
+                </tr>`;
+            }).join('') : `<tr><td colspan="6" class="text-center py-6 text-slate-400 italic">Sin informes en el período.</td></tr>`;
+
+            // --- Tabla detalle ---
+            document.querySelectorAll('.ivista-btn').forEach(b => {
+                const act = b.id === `ivista-${infVista}`;
+                b.className = `ivista-btn px-2.5 py-1 rounded-md text-[11px] font-bold border ${act ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`;
+            });
+            let lista = infVista === 'PENDIENTES' ? pendientes : infVista === 'ENTREGADOS' ? entregados : regs;
+            lista = [...lista].sort((a, b) => {
+                if (!a.inf.entregado && !b.inf.entregado) return (b.inf.dias || 0) - (a.inf.dias || 0);
+                if (a.inf.entregado !== b.inf.entregado) return a.inf.entregado ? 1 : -1;
+                return (b.inf.base || '').localeCompare(a.inf.base || '');
+            });
+            document.getElementById('inf-badge').innerText = `${lista.length} registros`;
+
+            const estCls = {
+                'PENDIENTE ATRASADO': 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800',
+                'PENDIENTE EN PLAZO': 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+                'ENTREGADO A TIEMPO': 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800',
+                'ENTREGADO TARDE': 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800',
+                'ENTREGADO SIN FECHA': 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
+            };
+            const MAX_FILAS = 400;
+            document.getElementById('inf-tbody').innerHTML = lista.length ? lista.slice(0, MAX_FILAS).map(({ v, inf }) => {
+                const atrCls = inf.atraso > 0 ? (inf.atraso > 7 ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300') : 'text-slate-400';
+                return `<tr onclick="abrirModalActividadById('${v.id}', 'HIST')" class="hover:bg-blue-50/50 dark:hover:bg-slate-700/40 cursor-pointer transition">
+                    <td class="py-2.5 px-4 font-bold text-slate-800 dark:text-slate-200 text-xs">${v.id}</td>
+                    <td class="py-2.5 px-4"><div class="font-semibold text-slate-700 dark:text-slate-200 w-56 truncate" title="${v.cliente}">${v.cliente}</div><div class="text-[11px] text-slate-500 dark:text-slate-400 w-56 truncate">${v.sede || '-'}</div></td>
+                    <td class="py-2.5 px-4 text-slate-600 dark:text-slate-400">${inf.base ? formatDateStr(inf.base) : '-'}</td>
+                    <td class="py-2.5 px-4 text-slate-600 dark:text-slate-400 text-xs">${v.tecnico}</td>
+                    <td class="py-2.5 px-4 text-slate-600 dark:text-slate-400">${inf.entregado ? (v.fechaInforme ? formatDateStr(v.fechaInforme) : '<span class="italic text-slate-400">Sin fecha</span>') : '<span class="italic text-slate-400">—</span>'}</td>
+                    <td class="py-2.5 px-4 text-center font-bold text-slate-700 dark:text-slate-200">${inf.dias === null ? '-' : inf.dias}</td>
+                    <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded font-black text-xs ${atrCls}">${inf.atraso === null ? '-' : (inf.atraso > 0 ? '+' + inf.atraso : '0')}</span></td>
+                    <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${estCls[inf.estado]}">${inf.estado}</span></td>
+                </tr>`;
+            }).join('') + (lista.length > MAX_FILAS ? `<tr><td colspan="8" class="text-center py-3 text-xs text-slate-400 italic">Mostrando ${MAX_FILAS} de ${lista.length}. Usa los filtros para acotar.</td></tr>` : '')
+                : `<tr><td colspan="8" class="text-center py-8 text-slate-400 italic">${infVista === 'PENDIENTES' ? '¡Sin informes pendientes en el período!' : 'Sin registros.'}</td></tr>`;
+
+            renderInformesChart(regs);
+        }
+
+        function renderInformesChart(regs) {
+            destroyChartPV('infMensual');
+            const ctx = document.getElementById('infMensualChart');
+            if (!ctx || typeof Chart === 'undefined') return;
+            const meses = {};
+            regs.filter(r => r.inf.entregado && r.inf.dias !== null && r.inf.base).forEach(r => {
+                const k = r.inf.base.substring(0, 7);
+                if (!meses[k]) meses[k] = { aTiempo: 0, tarde: 0, sum: 0, n: 0 };
+                if (r.inf.atraso > 0) meses[k].tarde++; else meses[k].aTiempo++;
+                meses[k].sum += r.inf.dias; meses[k].n++;
+            });
+            const keys = Object.keys(meses).sort().slice(-12);
+            const c = chartColors();
+            chartsPV.infMensual = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: keys.map(k => `${MONTH_NAMES[+k.substring(5, 7) - 1].substring(0, 3)} ${k.substring(2, 4)}`),
+                    datasets: [
+                        { label: 'A tiempo', data: keys.map(k => meses[k].aTiempo), backgroundColor: 'rgba(16,185,129,0.85)', stack: 's', yAxisID: 'y' },
+                        { label: 'Fuera de plazo', data: keys.map(k => meses[k].tarde), backgroundColor: 'rgba(244,63,94,0.8)', stack: 's', yAxisID: 'y' },
+                        { label: 'Prom. días entrega', data: keys.map(k => +(meses[k].sum / meses[k].n).toFixed(1)), type: 'line', borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, yAxisID: 'y2' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { labels: { color: c.text, font: { size: 10, weight: 'bold' } } }, tooltip: c.tooltip },
+                    scales: {
+                        x: { stacked: true, grid: { display: false }, ticks: { color: c.text, font: { size: 10 } } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.text, precision: 0 }, title: { display: true, text: 'Informes', color: c.text, font: { size: 10 } } },
+                        y2: { position: 'right', beginAtZero: true, grid: { display: false }, ticks: { color: '#f59e0b' }, title: { display: true, text: 'Días', color: '#f59e0b', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // =====================================================================
+        // MÓDULO: EVALUACIÓN DEL PERSONAL
+        // =====================================================================
+        function toggleEvSpartan() {
+            evIncludeSpartan = !evIncludeSpartan;
+            const btn = document.getElementById('ev-spartan-toggle');
+            btn.className = `flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-md border shadow-sm transition ${evIncludeSpartan ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'}`;
+            btn.querySelector('i').className = evIncludeSpartan ? 'fa-solid fa-square-check' : 'fa-regular fa-square';
+            renderEvaluacion();
+        }
+
+        // Calcula métricas y puntaje por responsable para un conjunto de visitas
+        function calcularEvaluacion(visitas) {
+            const st = {};
+            const get = t => st[t] || (st[t] = { nombre: t, realizadas: 0, canceladas: 0, vencidas: 0, horas: 0, clientes: new Set(), tipos: {}, infReq: 0, infEnt: 0, infPend: 0, infConFecha: 0, infATiempo: 0, sumDias: 0 });
+            visitas.forEach(v => {
+                const pers = splitResp(v.tecnico);
+                if (!pers.length) return;
+                const inf = infoInforme(v);
+                pers.forEach(t => {
+                    const s = get(t);
+                    if (esRealizado(v)) {
+                        s.realizadas++;
+                        s.horas += horasVisita(v);
+                        s.clientes.add(v.cliente);
+                        const tipo = v.tipoVisita || 'SIN TIPO';
+                        s.tipos[tipo] = (s.tipos[tipo] || 0) + 1;
+                    } else if (v.estado === 'CANCELADO') s.canceladas++;
+                    else if (esPendienteVisita(v) && v.fecha && v.fecha < TODAY_STR) s.vencidas++;
+                    if (inf.requerido) {
+                        s.infReq++;
+                        if (inf.entregado) {
+                            s.infEnt++;
+                            if (inf.dias !== null) { s.infConFecha++; s.sumDias += inf.dias; if (inf.atraso === 0) s.infATiempo++; }
+                        } else s.infPend++;
+                    }
+                });
+            });
+            const arr = Object.values(st).filter(s => s.realizadas + s.canceladas + s.vencidas > 0);
+            const maxReal = Math.max(1, ...arr.map(s => s.realizadas));
+            const maxHoras = Math.max(1, ...arr.map(s => s.horas));
+            arr.forEach(s => {
+                const intentos = s.realizadas + s.canceladas + s.vencidas;
+                s.efectividad = intentos ? s.realizadas / intentos : 0;
+                s.pctInf = s.infReq ? s.infEnt / s.infReq : 1;
+                s.puntualidad = s.infConFecha ? s.infATiempo / s.infConFecha : s.pctInf;
+                s.promDias = s.infConFecha ? s.sumDias / s.infConFecha : null;
+                s.pts = {
+                    visitas: 25 * s.realizadas / maxReal,
+                    horas: 20 * s.horas / maxHoras,
+                    efectividad: 20 * s.efectividad,
+                    informes: 20 * s.pctInf,
+                    puntualidad: 15 * s.puntualidad
+                };
+                s.score = Object.values(s.pts).reduce((a, b) => a + b, 0);
+            });
+            return arr.sort((a, b) => b.score - a.score);
+        }
+
+        function calificacion(score) {
+            if (score >= 85) return ['Excelente', 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'];
+            if (score >= 70) return ['Bueno', 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'];
+            if (score >= 55) return ['Regular', 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800'];
+            return ['Por mejorar', 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800'];
+        }
+
+        function visitasEvaluables() {
+            return dataProgramacionPvFull.filter(v => v.fecha && (evIncludeSpartan || !esInterno(v)));
+        }
+
+        function renderEvaluacion() {
+            if (!document.getElementById('ev-tabla-tbody')) return;
+            const base = visitasEvaluables();
+            const periodo = base.filter(v => periodoOK(v.fecha, 'ev-year-filter', 'ev-month-filter'));
+            const evals = calcularEvaluacion(periodo);
+
+            const totReal = periodo.filter(esRealizado).length;
+            const totHoras = periodo.filter(esRealizado).reduce((a, v) => a + horasVisita(v), 0);
+            const infs = periodo.map(infoInforme).filter(i => i.requerido);
+            const infEnt = infs.filter(i => i.entregado).length;
+            document.getElementById('ev-kpi-activos').innerText = evals.filter(s => s.realizadas > 0).length;
+            document.getElementById('ev-kpi-visitas').innerText = totReal;
+            document.getElementById('ev-kpi-horas').innerText = Math.round(totHoras).toLocaleString('es-PE') + 'h';
+            document.getElementById('ev-kpi-informes').innerText = infs.length ? Math.round(infEnt / infs.length * 100) + '%' : '-';
+            document.getElementById('ev-kpi-informes-det').innerText = `${infEnt} de ${infs.length} requeridos`;
+            document.getElementById('ev-kpi-score').innerText = evals.length ? (evals.reduce((a, s) => a + s.score, 0) / evals.length).toFixed(0) : '0';
+            document.getElementById('ev-plazo-label').innerText = `${PLAZO_INFORME} ${PLAZO_INFORME === 1 ? 'día' : 'días'}`;
+
+            // Tabla completa
+            document.getElementById('ev-tabla-tbody').innerHTML = evals.length ? evals.map((s, i) => {
+                const [cal, calCls] = calificacion(s.score);
+                const pct = x => Math.round(x * 100) + '%';
+                return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                    <td class="py-2 pr-3 font-black text-slate-400">${i + 1}</td>
+                    <td class="py-2 pr-3 font-semibold text-slate-800 dark:text-slate-200">${i === 0 ? '<i class="fa-solid fa-crown text-amber-400 mr-1"></i>' : ''}${s.nombre}</td>
+                    <td class="py-2 pr-3 text-center font-bold text-emerald-600 dark:text-emerald-400">${s.realizadas}</td>
+                    <td class="py-2 pr-3 text-center ${s.canceladas ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-400'}">${s.canceladas}</td>
+                    <td class="py-2 pr-3 text-center ${s.vencidas ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-400'}">${s.vencidas}</td>
+                    <td class="py-2 pr-3 text-center text-slate-700 dark:text-slate-300">${pct(s.efectividad)}</td>
+                    <td class="py-2 pr-3 text-center text-slate-700 dark:text-slate-300">${s.horas.toFixed(0)}h</td>
+                    <td class="py-2 pr-3 text-center text-slate-500 dark:text-slate-400">${s.realizadas ? (s.horas / s.realizadas).toFixed(1) : '-'}</td>
+                    <td class="py-2 pr-3 text-center text-slate-500 dark:text-slate-400">${s.clientes.size}</td>
+                    <td class="py-2 pr-3 text-center text-slate-700 dark:text-slate-300">${s.infReq ? `${s.infEnt}/${s.infReq}` : '-'}</td>
+                    <td class="py-2 pr-3 text-center ${s.infPend ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-400'}">${s.infPend}</td>
+                    <td class="py-2 pr-3 text-center text-slate-500 dark:text-slate-400">${s.promDias === null ? '-' : s.promDias.toFixed(1)}</td>
+                    <td class="py-2 pr-3 text-center text-slate-500 dark:text-slate-400">${s.infConFecha ? pct(s.infATiempo / s.infConFecha) : '-'}</td>
+                    <td class="py-2 pr-3 text-center"><span class="font-black text-slate-800 dark:text-slate-100">${s.score.toFixed(0)}</span></td>
+                    <td class="py-2 text-right"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${calCls}">${cal}</span></td>
+                </tr>`;
+            }).join('') : `<tr><td colspan="15" class="text-center py-8 text-slate-400 italic">Sin datos en el período.</td></tr>`;
+
+            renderEmpleadoDelMes(base);
+            renderEvaluacionCharts(evals, base);
+        }
+
+        function renderEmpleadoDelMes(base) {
+            const ySel = document.getElementById('ev-year-filter').value;
+            const mSel = document.getElementById('ev-month-filter').value;
+            let mesKey;
+            if (ySel !== 'TODOS' && mSel !== 'TODOS') mesKey = `${ySel}-${mSel}`;
+            else {
+                // Por defecto: último mes cerrado (el mes anterior al actual) con visitas realizadas
+                const mesActual = TODAY_STR.substring(0, 7);
+                const meses = Array.from(new Set(base.filter(esRealizado).map(v => v.fecha.substring(0, 7)))).filter(m => m < mesActual).sort();
+                mesKey = meses[meses.length - 1];
+            }
+            const nota = document.getElementById('empmes-nota');
+            const ids = ['empmes-nombre', 'empmes-visitas', 'empmes-horas', 'empmes-informes', 'empmes-efectividad', 'empmes-score', 'empmes-iniciales'];
+            if (!mesKey) { ids.forEach(i => document.getElementById(i).innerText = '-'); return; }
+
+            const evalsMes = calcularEvaluacion(base.filter(v => v.fecha.substring(0, 7) === mesKey)).filter(s => s.realizadas > 0);
+            document.getElementById('empmes-periodo').innerText = `${MONTH_NAMES[+mesKey.substring(5, 7) - 1]} ${mesKey.substring(0, 4)}`;
+            const mejor = evalsMes[0];
+            if (!mejor) { ids.forEach(i => document.getElementById(i).innerText = '-'); document.getElementById('empmes-podio').innerHTML = ''; return; }
+
+            document.getElementById('empmes-nombre').innerText = mejor.nombre;
+            document.getElementById('empmes-score').innerText = `${mejor.score.toFixed(0)} pts · ${calificacion(mejor.score)[0]}`;
+            document.getElementById('empmes-visitas').innerText = mejor.realizadas;
+            document.getElementById('empmes-horas').innerText = mejor.horas.toFixed(0) + 'h';
+            document.getElementById('empmes-informes').innerText = mejor.infReq ? Math.round(mejor.pctInf * 100) + '%' : 'N/A';
+            document.getElementById('empmes-efectividad').innerText = Math.round(mejor.efectividad * 100) + '%';
+            document.getElementById('empmes-iniciales').innerText = mejor.nombre.split(' ').filter(w => w).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+            const medallas = ['🥇', '🥈', '🥉'];
+            document.getElementById('empmes-podio').innerHTML = evalsMes.slice(0, 3).map((s, i) =>
+                `<span class="bg-white/15 border border-white/25 rounded-full px-3 py-1 text-xs font-bold">${medallas[i]} ${s.nombre} · ${s.score.toFixed(0)} pts</span>`).join('');
+            nota.innerText = (ySel !== 'TODOS' && mSel !== 'TODOS')
+                ? 'Mayor puntaje de evaluación en el mes seleccionado.'
+                : 'Mayor puntaje del último mes cerrado. Elige año y mes en el filtro para ver otro mes (incluido el mes en curso).';
+        }
+
+        function renderEvaluacionCharts(evals, base) {
+            ['evRanking', 'evInformes', 'evVisitasHoras', 'evEspecializacion', 'evTendencia'].forEach(destroyChartPV);
+            if (typeof Chart === 'undefined') return;
+            const c = chartColors();
+            const baseOpts = (extra = {}) => Object.assign({
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: c.text, font: { size: 10, weight: 'bold' }, boxWidth: 12 } }, tooltip: c.tooltip }
+            }, extra);
+            const nombres = evals.map(s => s.nombre);
+
+            // Ranking: composición del puntaje
+            document.getElementById('ev-ranking-wrap').style.height = `${Math.max(220, evals.length * 30 + 60)}px`;
+            const comp = [
+                ['visitas', 'Visitas (25)', 'rgba(16,185,129,0.85)'],
+                ['horas', 'Horas (20)', 'rgba(20,184,166,0.85)'],
+                ['efectividad', 'Efectividad (20)', 'rgba(245,158,11,0.85)'],
+                ['informes', 'Informes (20)', 'rgba(59,130,246,0.85)'],
+                ['puntualidad', 'Puntualidad (15)', 'rgba(244,63,94,0.8)']
+            ];
+            chartsPV.evRanking = new Chart(document.getElementById('evRankingChart'), {
+                type: 'bar',
+                data: { labels: nombres, datasets: comp.map(([k, l, col]) => ({ label: l, data: evals.map(s => +s.pts[k].toFixed(1)), backgroundColor: col, stack: 's', barThickness: 18 })) },
+                options: baseOpts({
+                    indexAxis: 'y', interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { position: 'top', labels: { color: c.text, font: { size: 10, weight: 'bold' }, boxWidth: 12 } }, tooltip: Object.assign({}, c.tooltip, { callbacks: { footer: items => 'Total: ' + items.reduce((a, i) => a + i.raw, 0).toFixed(0) + ' pts' } }) },
+                    scales: { x: { stacked: true, max: 100, beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.text } }, y: { stacked: true, grid: { display: false }, ticks: { color: c.text, font: { size: 10, weight: 'bold' } } } }
+                })
+            });
+
+            // Informes por responsable
+            const conInf = evals.filter(s => s.infReq > 0);
+            chartsPV.evInformes = new Chart(document.getElementById('evInformesChart'), {
+                type: 'bar',
+                data: {
+                    labels: conInf.map(s => s.nombre.split(' ')[0]),
+                    datasets: [
+                        { label: 'A tiempo', data: conInf.map(s => s.infATiempo), backgroundColor: 'rgba(16,185,129,0.85)', stack: 's' },
+                        { label: 'Fuera de plazo', data: conInf.map(s => s.infConFecha - s.infATiempo), backgroundColor: 'rgba(245,158,11,0.85)', stack: 's' },
+                        { label: 'Entregado sin fecha', data: conInf.map(s => s.infEnt - s.infConFecha), backgroundColor: 'rgba(148,163,184,0.7)', stack: 's' },
+                        { label: 'Pendiente', data: conInf.map(s => s.infPend), backgroundColor: 'rgba(244,63,94,0.85)', stack: 's' }
+                    ]
+                },
+                options: baseOpts({ interaction: { mode: 'index', intersect: false }, scales: { x: { stacked: true, grid: { display: false }, ticks: { color: c.text, font: { size: 10 } } }, y: { stacked: true, beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.text, precision: 0 } } } })
+            });
+
+            // Visitas y horas
+            const porVis = [...evals].sort((a, b) => b.realizadas - a.realizadas);
+            chartsPV.evVisitasHoras = new Chart(document.getElementById('evVisitasHorasChart'), {
+                type: 'bar',
+                data: {
+                    labels: porVis.map(s => s.nombre.split(' ')[0]),
+                    datasets: [
+                        { label: 'Visitas realizadas', data: porVis.map(s => s.realizadas), backgroundColor: 'rgba(139,92,246,0.85)', yAxisID: 'y' },
+                        { label: 'Horas', data: porVis.map(s => +s.horas.toFixed(1)), type: 'line', borderColor: '#14b8a6', backgroundColor: '#14b8a6', tension: 0.3, yAxisID: 'y2' }
+                    ]
+                },
+                options: baseOpts({ interaction: { mode: 'index', intersect: false }, scales: { x: { grid: { display: false }, ticks: { color: c.text, font: { size: 10 } } }, y: { beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.text, precision: 0 } }, y2: { position: 'right', beginAtZero: true, grid: { display: false }, ticks: { color: '#14b8a6' } } } })
+            });
+
+            // Especialización
+            const totTipos = {};
+            evals.forEach(s => Object.entries(s.tipos).forEach(([t, n]) => totTipos[t] = (totTipos[t] || 0) + n));
+            const topTipos = Object.entries(totTipos).sort((a, b) => b[1] - a[1]).slice(0, 6).map(e => e[0]);
+            const palette = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#f43f5e', '#06b6d4', '#94a3b8'];
+            const dsTipos = topTipos.map((t, i) => ({ label: t, data: porVis.map(s => s.tipos[t] || 0), backgroundColor: palette[i], stack: 's' }));
+            dsTipos.push({ label: 'OTROS', data: porVis.map(s => Object.entries(s.tipos).filter(([t]) => !topTipos.includes(t)).reduce((a, [, n]) => a + n, 0)), backgroundColor: palette[6], stack: 's' });
+            chartsPV.evEspecializacion = new Chart(document.getElementById('evEspecializacionChart'), {
+                type: 'bar',
+                data: { labels: porVis.map(s => s.nombre.split(' ')[0]), datasets: dsTipos },
+                options: baseOpts({ interaction: { mode: 'index', intersect: false }, scales: { x: { stacked: true, grid: { display: false }, ticks: { color: c.text, font: { size: 10 } } }, y: { stacked: true, beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.text, precision: 0 } } } })
+            });
+
+            // Tendencia mensual del puntaje (top 5 del período)
+            const ySel = document.getElementById('ev-year-filter').value;
+            const anio = ySel !== 'TODOS' ? ySel : String(yyyy);
+            document.getElementById('ev-tend-year').innerText = anio;
+            const top5 = evals.slice(0, 5).map(s => s.nombre);
+            const mesesAnio = Array.from({ length: 12 }, (_, i) => `${anio}-${String(i + 1).padStart(2, '0')}`).filter(k => k <= TODAY_STR.substring(0, 7));
+            const scoresPorMes = mesesAnio.map(k => {
+                const ev = calcularEvaluacion(base.filter(v => v.fecha.substring(0, 7) === k));
+                const m = {}; ev.forEach(s => m[s.nombre] = s.score); return m;
+            });
+            chartsPV.evTendencia = new Chart(document.getElementById('evTendenciaChart'), {
+                type: 'line',
+                data: { labels: mesesAnio.map(k => MONTH_NAMES[+k.substring(5, 7) - 1].substring(0, 3)), datasets: top5.map((n, i) => ({ label: n.split(' ')[0], data: scoresPorMes.map(m => m[n] !== undefined ? +m[n].toFixed(0) : null), borderColor: palette[i], backgroundColor: palette[i], tension: 0.3, spanGaps: true })) },
+                options: baseOpts({ interaction: { mode: 'index', intersect: false }, scales: { x: { grid: { display: false }, ticks: { color: c.text } }, y: { min: 0, max: 100, grid: { color: c.grid }, ticks: { color: c.text } } } })
+            });
+        }
+
+        function refreshActiveTab() {
+            const active = document.querySelector('.tab-content.active');
+            if (!active) return;
+            const id = active.id.replace('tab-', '');
+            if (id === 'cal_tec') renderGridCalendarioTec();
+            if (id === 'informes') { populateInformesFilters(); renderInformes(); }
+            if (id === 'evaluacion') { fillYearSelect('ev-year-filter', true); renderEvaluacion(); }
         }
 
         function toggleSortOrder() {
@@ -1031,11 +2474,22 @@ function doGet(e) {
                 document.getElementById('modal-act-id').innerText = "Visita Posventa Proyectada";
                 headerEl.className = "bg-emerald-600 dark:bg-emerald-700 p-4 flex justify-between items-center text-white";
                 document.getElementById('modal-tech-section').style.display = 'none';
+                document.getElementById('modal-comentarios-container').style.display = 'none';
+                document.getElementById('modal-pendientes-container').style.display = 'none';
             } else {
                 document.getElementById('modal-act-id').innerText = objData.id;
                 headerEl.className = "bg-purple-600 dark:bg-purple-700 p-4 flex justify-between items-center text-white";
                 document.getElementById('modal-tech-section').style.display = 'block';
                 document.getElementById('modal-act-tecnico').innerText = objData.tecnico;
+                const inf = infoInforme(objData);
+                let txtInf = objData.estadoInforme || 'Sin estado';
+                if (inf.requerido && inf.entregado) txtInf = inf.dias !== null ? `Entregado el ${formatDateStr(objData.fechaInforme)} · ${inf.dias} ${inf.dias === 1 ? 'día' : 'días'} después de la visita${inf.atraso > 0 ? ` (${inf.atraso} ${inf.atraso === 1 ? 'día' : 'días'} de atraso)` : ' (a tiempo)'}` : 'Entregado (sin fecha de entrega registrada)';
+                else if (inf.requerido) txtInf = `PENDIENTE · ${inf.dias} ${inf.dias === 1 ? 'día' : 'días'} desde la visita${inf.atraso > 0 ? ` · ${inf.atraso} ${inf.atraso === 1 ? 'día' : 'días'} de atraso` : ' · dentro del plazo'}`;
+                document.getElementById('modal-act-informe').innerText = txtInf;
+                document.getElementById('modal-act-comentarios').innerText = objData.comentarios || '';
+                document.getElementById('modal-comentarios-container').style.display = objData.comentarios ? 'block' : 'none';
+                document.getElementById('modal-act-pendientes').innerText = objData.pendientes || '';
+                document.getElementById('modal-pendientes-container').style.display = objData.pendientes ? 'block' : 'none';
             }
             document.getElementById('lbl-modal-act-fecha').innerHTML = '<i class="fa-regular fa-calendar mr-1"></i>Fecha de Inicio';
 
@@ -1058,9 +2512,12 @@ function doGet(e) {
             } else if (objData.estado === "REALIZADO" || objData.estado === "AL DÍA") {
                 estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800";
                 estadoEl.innerHTML = '<i class="fa-solid fa-check"></i> ' + (objData.estado === 'AL DÍA' ? 'AL DÍA' : 'REALIZADO');
-            } else if (objData.estado === "PENDIENTE") {
+            } else if (objData.estado === "PENDIENTE" && sourceMode === 'PROY') {
                 estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800";
                 estadoEl.innerHTML = '<i class="fa-regular fa-clock"></i> PRÓXIMO';
+            } else if (objData.estado === "PENDIENTE" || (sourceMode !== 'PROY' && !objData.estado)) {
+                estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800";
+                estadoEl.innerHTML = '<i class="fa-regular fa-clock"></i> PENDIENTE';
             } else if (objData.estado === "CANCELADO") {
                 estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-800";
                 estadoEl.innerHTML = '<i class="fa-solid fa-ban"></i> CANCELADO';
@@ -1120,12 +2577,17 @@ function doGet(e) {
                 dashboard: { title: "Control de Frecuencias Posventa", sub: "Proyección basada en visitas Realizadas de PROGRAMACION PV y FrecuenciaVisitaPv." },
                 kanban: { title: "Kanban de Prioridades Posventa", sub: "Visualización rápida del estado de visitas de posventa" },
                 cal_proy: { title: "Calendario Proyectado Posventa", sub: "Próximos vencimientos de visitas (sedes con FrecuenciaVisitaPv)" },
-                api: { title: "Conexión AppSheet", sub: "Configuración y estructura de base de datos" }
+                clientes: { title: "Control de Clientes Posventa", sub: "Historial de visitas de posventa por cliente y sede" },
+                cal_tec: { title: "Calendario del Personal Posventa", sub: "Visitas programadas, realizadas y canceladas por responsable" },
+                informes: { title: "Seguimiento de Informes", sub: "Entrega de informes y días de atraso después de la visita" },
+                evaluacion: { title: "Evaluación del Personal Posventa", sub: "Visitas, horas, entrega de informes y empleado del mes" }
             };
             if (titles[tabId]) {
                 document.getElementById('page-title').innerText = titles[tabId].title;
                 document.getElementById('page-subtitle').innerText = titles[tabId].sub;
             }
+
+            if (['cal_tec', 'informes', 'evaluacion'].includes(tabId)) refreshActiveTab();
 
             const isMobile = window.innerWidth < 768;
             if (isMobile && !document.getElementById('sidebar').classList.contains('-translate-x-full')) {
