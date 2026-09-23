@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPARTAN - Dashboard Servicio Posventa</title>
+    
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js para el gráfico cronológico profesional -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Lógica visual de pestañas principales */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        
+        /* Lógica visual de pestañas internas del Perfil Cliente */
+        .c-tab-content { display: none; }
+        .c-tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        /* Elementos de cambio entre Pantalla e Impresión */
+        .print-only { display: none; }
+        
+        @media print {
+            /* Forzar orientación horizontal y márgenes pequeños */
+            @page { 
+                size: landscape; 
+                margin: 6mm 6mm; 
+            }
+
+            body { 
+                background: white !important; 
+                color: black !important;
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+                font-size: 10px !important;
+            }
+
+            /* Ocultar elementos no deseados */
+            #sidebar, header, #kpi-section, #year-filter-section, .print-hide, button, select, .tab-btn { 
+                display: none !important; 
+            }
+
+            /* Mostrar elementos específicos de impresión */
+            .print-only {
+                display: block !important;
+            }
+            .screen-only {
+                display: none !important;
+            }
+
+            /* Forzar fondo blanco */
+            .calendar-grid-print, .calendar-grid-print > div, main, .flex-1, .tab-content.active { 
+                background-color: #ffffff !important; 
+                background: white !important;
+            }
+
+            /* Grilla súper compacta para que calce en una sola hoja */
+            .calendar-grid-print { 
+                display: grid !important;
+                grid-template-columns: repeat(7, 1fr) !important;
+                gap: 2px !important; 
+                border: 1px solid #94a3b8 !important;
+                width: 100% !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Celdas del calendario para impresión */
+            .calendar-grid-print > div { 
+                min-height: 60px !important; 
+                height: auto !important; 
+                border: 1px solid #cbd5e1 !important;
+                padding: 2px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                break-inside: avoid !important;
+            }
+
+            /* Actividades compactas optimizadas */
+            .tec-event-print {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                border: 1px solid currentColor !important;
+                opacity: 0.95 !important;
+                padding: 1px 3px !important;
+                margin-bottom: 2px !important;
+                border-radius: 3px !important;
+                font-size: 7.5px !important;
+                line-height: 1.05 !important;
+                break-inside: avoid !important;
+                white-space: normal !important;
+                word-break: break-all !important;
+            }
+
+            /* Forzado exacto de colores de impresión */
+            .print-ev-realizado {
+                background-color: #ecfdf5 !important;
+                color: #065f46 !important;
+            }
+            .print-ev-pendiente {
+                background-color: #eff6ff !important;
+                color: #1e40af !important;
+            }
+            .print-ev-cancelado {
+                background-color: #fef2f2 !important;
+                color: #991b1b !important;
+            }
+            .print-ev-atrasado {
+                background-color: #fff1f2 !important;
+                color: #9f1239 !important;
+            }
+            .print-ev-aldia {
+                background-color: #f0fdf4 !important;
+                color: #166534 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen flex overflow-hidden transition-colors duration-200">
+
+    <!-- PANTALLA DE CARGA -->
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/95 z-[100] flex flex-col items-center justify-center text-white transition-opacity duration-300">
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl mb-4 text-blue-500"></i>
+        <h2 class="text-2xl font-bold tracking-widest">SPARTAN</h2>
+        <p class="text-sm text-slate-400 mt-2" id="loading-text">Conectando con base de datos...</p>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 -translate-x-full md:translate-x-0 transition-transform duration-300 bg-slate-900 dark:bg-[#090e17] border-r dark:border-slate-800 text-white flex flex-col justify-between shrink-0 transition-colors duration-200">
+        <div>
+            <div class="p-6 flex items-center gap-3 border-b border-slate-800 dark:border-slate-800/50">
+                <div class="bg-blue-600 p-2.5 rounded-lg text-white">
+                    <i class="fa-solid fa-shield-halved text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-none tracking-wide">SPARTAN</h1>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest">Servicio Posventa</span>
+                </div>
+            </div>
+            <nav class="p-4 space-y-1.5 mt-2">
+                <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-4">Módulos Principales</div>
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left bg-blue-600 text-white font-medium shadow-md shadow-blue-900/20 transition">
+                    <i class="fa-solid fa-route w-5 text-center"></i> Frecuencias
+                </button>
+                <button onclick="switchTab('kanban')" id="btn-kanban" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-solid fa-table-columns w-5 text-center"></i> Kanban Prioridades
+                </button>
+                <button onclick="switchTab('cal_proy')" id="btn-cal_proy" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-regular fa-calendar-check w-5 text-center text-emerald-400"></i> Calendario Proyectado
+                </button>
+                
+                <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 mt-6 px-4">Configuración</div>
+                <button onclick="switchTab('api')" id="btn-api" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-solid fa-cloud-arrow-down w-5 text-center"></i> Conexión AppSheet
+                </button>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-slate-800 dark:border-slate-800/50 text-[11px] text-slate-500 text-center flex flex-col items-center gap-1">
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-emerald-500 animate-pulse text-[8px]"></i> API Conectada</span>
+            <span>Versión de Filtro Activa</span>
+        </div>
+    </aside>
+
+    <!-- FONDO OSCURO PARA MOBILE SIDEBAR -->
+    <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 z-30 hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <!-- HEADER -->
+        <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-10 transition-colors duration-200">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 p-2 rounded-lg shadow-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition" onclick="toggleMobileMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white" id="page-title">Control de Frecuencias Posventa</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 hidden sm:block" id="page-subtitle">Proyección basada en visitas Realizadas de PROGRAMACION PV y FrecuenciaVisitaPv.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="hidden sm:flex bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold px-3 py-1.5 rounded-md items-center gap-2 border border-blue-100 dark:border-blue-800/50 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50 transition" onclick="fetchRealData()" title="Actualizar datos">
+                    <i class="fa-solid fa-rotate-right" id="refresh-icon"></i>
+                    <span id="current-date-display">Hoy</span>
+                </div>
+                
+                <div class="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                
+                <!-- BOTÓN TEMA OSCURO/CLARO -->
+                <button onclick="toggleTheme()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition border border-slate-200 dark:border-slate-600" title="Cambiar Tema">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block"></i>
+                </button>
+
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-none">Posventa</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Coordinación SPARTAN</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold border border-blue-200 dark:border-blue-700">
+                        SP
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- BANNER DE ALERTAS -->
+        <div id="error-banner" class="hidden bg-amber-50 border-b border-amber-200 text-amber-800 p-3 text-sm font-medium shadow-inner flex items-center justify-center gap-2">
+        </div>
+
+        <!-- CONTENIDO SCROLL -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+            
+            <!-- KPIs GLOBALES (CON ACCIÓN DE FILTRADO AL HACER CLICK) -->
+            <div id="kpi-section" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+                <!-- Atrasadas -->
+                <div onclick="setGlobalFilter('ATRASADO'); switchTab('dashboard')" class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all duration-200 hover:shadow-md cursor-pointer hover:border-rose-300 dark:hover:border-rose-900">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-rose-500"></div>
+                    <div class="pl-2 z-10">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Atrasadas</span>
+                        <div class="flex items-end gap-2 mt-1">
+                            <h3 class="text-3xl font-black text-rose-600 dark:text-rose-500 leading-none" id="kpi-atrasadas">0</h3>
+                        </div>
+                        <span class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mt-1.5 block bg-rose-50 dark:bg-rose-900/30 inline-block px-1.5 py-0.5 rounded">Frecuencia Vencida</span>
+                    </div>
+                    <div class="text-rose-100 dark:text-rose-900/50 text-4xl opacity-50 group-hover:scale-110 transition-transform"><i class="fa-solid fa-calendar-xmark"></i></div>
+                </div>
+                <!-- Próximas / Pendientes -->
+                <div onclick="setGlobalFilter('PENDIENTE'); switchTab('dashboard')" class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all duration-200 hover:shadow-md cursor-pointer hover:border-blue-300 dark:hover:border-blue-900">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+                    <div class="pl-2 z-10">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pendientes (7d)</span>
+                        <div class="flex items-end gap-2 mt-1">
+                            <h3 class="text-3xl font-black text-blue-600 dark:text-blue-500 leading-none" id="kpi-pendientes">0</h3>
+                        </div>
+                        <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 mt-1.5 block bg-blue-50 dark:bg-blue-900/30 inline-block px-1.5 py-0.5 rounded">Agendar Próximamente</span>
+                    </div>
+                    <div class="text-blue-100 dark:text-blue-900/50 text-4xl opacity-50 group-hover:scale-110 transition-transform"><i class="fa-solid fa-clock"></i></div>
+                </div>
+                <!-- Al Día -->
+                <div onclick="setGlobalFilter('AL DÍA'); switchTab('dashboard')" class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all duration-200 hover:shadow-md cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-900">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
+                    <div class="pl-2 z-10">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Al Día (OK)</span>
+                        <div class="flex items-end gap-2 mt-1">
+                            <h3 class="text-3xl font-black text-emerald-600 dark:text-emerald-500 leading-none" id="kpi-aldia">0</h3>
+                            <span class="text-sm font-bold text-slate-400 dark:text-slate-500 mb-1" id="kpi-total-sedes">/ 0</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1.5 block bg-emerald-50 dark:bg-emerald-900/30 inline-block px-1.5 py-0.5 rounded">Faltan &gt; 7 días</span>
+                    </div>
+                    <div class="text-emerald-100 dark:text-emerald-900/50 text-4xl opacity-50 group-hover:scale-110 transition-transform"><i class="fa-solid fa-shield-check"></i></div>
+                </div>
+                <!-- Sin Historial -->
+                <div onclick="setGlobalFilter('SIN HISTORIAL'); switchTab('dashboard')" class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all duration-200 hover:shadow-md cursor-pointer hover:border-slate-300 dark:hover:border-slate-600">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-400"></div>
+                    <div class="pl-2 z-10">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Sin Historial</span>
+                        <div class="flex items-end gap-2 mt-1">
+                            <h3 class="text-3xl font-black text-slate-600 dark:text-slate-400 leading-none" id="kpi-sinhistorial">0</h3>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1.5 block bg-slate-100 dark:bg-slate-700 inline-block px-1.5 py-0.5 rounded">Visita Inicial Necesaria</span>
+                    </div>
+                    <div class="text-slate-100 dark:text-slate-700 text-4xl opacity-50 group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-circle-question"></i></div>
+                </div>
+            </div>
+
+            <!-- BOTONES DE FILTRO Y ORDENAMIENTO -->
+            <div id="year-filter-section" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 pb-2 border-b border-slate-200/60 dark:border-slate-700/60 transition-colors">
+                <div class="flex items-center gap-3 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+                    <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">ESTADO:</span>
+                    <div class="flex gap-2">
+                        <button onclick="setGlobalFilter('TODOS')" id="flt-TODOS" class="flt-btn px-3 py-1.5 rounded-md text-xs font-bold bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-800 shadow-sm transition">Todos</button>
+                        <button onclick="setGlobalFilter('ATRASADO')" id="flt-ATRASADO" class="flt-btn px-3 py-1.5 rounded-md text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400 transition">Atrasados</button>
+                        <button onclick="setGlobalFilter('PENDIENTE')" id="flt-PENDIENTE" class="flt-btn px-3 py-1.5 rounded-md text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition">Próximos</button>
+                        <button onclick="setGlobalFilter('AL DÍA')" id="flt-AL DÍA" class="flt-btn px-3 py-1.5 rounded-md text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 transition">Al Día</button>
+                        <button onclick="setGlobalFilter('SIN HISTORIAL')" id="flt-SIN HISTORIAL" class="flt-btn px-3 py-1.5 rounded-md text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-white transition">Sin Historial</button>
+                    </div>
+                </div>
+                <button onclick="toggleSortOrder()" id="btn-sort" class="px-4 py-1.5 rounded-md text-xs font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm transition flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto">
+                    <i class="fa-solid fa-arrow-down-1-9"></i> Próximas primero
+                </button>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 1: TABLA MAESTRA DE FRECUENCIAS        -->
+            <!-- ========================================== -->
+            <section id="tab-dashboard" class="tab-content active space-y-4">
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col transition-colors">
+                    <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <div class="relative w-full md:w-96">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="table-search" oninput="actualizarUICompleta()" placeholder="Buscar cliente o sede..." class="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm">
+                        </div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i> Mostrando solo Sedes con <span class="font-bold text-slate-700 dark:text-slate-300">FrecuenciaVisitaPv &gt; 0</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto min-h-[400px]">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-300 text-[11px] font-bold uppercase tracking-wider transition-colors">
+                                    <th class="py-3 px-6">Cliente y Sede</th>
+                                    <th class="py-3 px-6 text-center">Frecuencia</th>
+                                    <th class="py-3 px-6">Última Visita (Realizada)</th>
+                                    <th class="py-3 px-6">Próxima Sugerida</th>
+                                    <th class="py-3 px-6 text-center">Días Restantes</th>
+                                    <th class="py-3 px-6 text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                                <!-- Filas inyectadas -->
+                            </tbody>
+                        </table>
+                        
+                        <div id="empty-state" class="hidden flex-col items-center justify-center p-12 text-slate-400 dark:text-slate-500">
+                            <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-50"></i>
+                            <p class="font-medium">No se encontraron resultados</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- TAB 2: KANBAN PRIORIDADES VISITAS          -->
+            <!-- ========================================== -->
+            <section id="tab-kanban" class="tab-content h-full">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 h-full pb-10">
+                    <!-- ATRASADAS -->
+                    <div class="bg-rose-50/50 dark:bg-rose-900/10 rounded-xl p-3 border border-rose-100 dark:border-rose-900/30 flex flex-col h-[600px] transition-colors">
+                        <div class="flex items-center justify-between mb-3 border-b border-rose-200/50 dark:border-rose-800/50 pb-2">
+                            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span><h4 class="font-bold text-sm text-rose-900 dark:text-rose-400">Atrasadas</h4></div>
+                            <span class="bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 text-xs font-bold px-2 py-0.5 rounded-full" id="kb-count-atrasado">0</span>
+                        </div>
+                        <div class="space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar" id="kb-col-atrasado"></div>
+                    </div>
+                    <!-- PENDIENTES -->
+                    <div class="bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-3 border border-blue-100 dark:border-blue-900/30 flex flex-col h-[600px] transition-colors">
+                        <div class="flex items-center justify-between mb-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-2">
+                            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span><h4 class="font-bold text-sm text-blue-900 dark:text-blue-400">Próximas a vencer</h4></div>
+                            <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-xs font-bold px-2 py-0.5 rounded-full" id="kb-count-pendiente">0</span>
+                        </div>
+                        <div class="space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar" id="kb-col-pendiente"></div>
+                    </div>
+                    <!-- AL DÍA -->
+                    <div class="bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl p-3 border border-emerald-100 dark:border-emerald-900/30 flex flex-col h-[600px] transition-colors">
+                        <div class="flex items-center justify-between mb-3 border-b border-emerald-200/50 dark:border-emerald-800/50 pb-2">
+                            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><h4 class="font-bold text-sm text-emerald-900 dark:text-emerald-400">Al Día (OK)</h4></div>
+                            <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-xs font-bold px-2 py-0.5 rounded-full" id="kb-count-aldia">0</span>
+                        </div>
+                        <div class="space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar" id="kb-col-aldia"></div>
+                    </div>
+                    <!-- SIN HISTORIAL -->
+                    <div class="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-200 dark:border-slate-700 flex flex-col h-[600px] transition-colors">
+                        <div class="flex items-center justify-between mb-3 border-b border-slate-200/50 dark:border-slate-700/50 pb-2">
+                            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span><h4 class="font-bold text-sm text-slate-800 dark:text-slate-300">Sin Historial</h4></div>
+                            <span class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full" id="kb-count-sinhistorial">0</span>
+                        </div>
+                        <div class="space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar" id="kb-col-sinhistorial"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- TAB 3: CALENDARIO PROYECTADO               -->
+            <!-- ========================================== -->
+            <section id="tab-cal_proy" class="tab-content space-y-4 h-full">
+                <!-- Encabezado de impresión del Proyectado -->
+                <div class="hidden print:block mb-4 text-center border-b border-slate-300 pb-3">
+                    <h2 class="text-xl font-bold text-slate-800 uppercase tracking-wider">PROGRAMACIÓN DE VISITAS POSVENTA PROYECTADAS</h2>
+                    <p class="text-sm text-slate-600 mt-1 font-semibold" id="print-cal-proy-subtitle">Mes Año</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-full print:border-none print:shadow-none transition-colors">
+                    <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center bg-emerald-50/30 dark:bg-emerald-900/10 print-hide">
+                        <div class="flex items-center gap-3 w-full md:w-auto justify-between">
+                            <button onclick="changeCalProyMonth(-1)" class="p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400 transition shadow-sm"><i class="fa-solid fa-chevron-left"></i></button>
+                            <h3 id="cal-proy-month-label" class="font-bold text-lg text-slate-800 dark:text-slate-200 uppercase tracking-wider min-w-[150px] text-center">MES AÑO</h3>
+                            <button onclick="changeCalProyMonth(1)" class="p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400 transition shadow-sm"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                            <button onclick="window.print()" class="flex items-center gap-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm transition">
+                                <i class="fa-solid fa-print"></i> <span class="hidden md:inline">Imprimir</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 overflow-x-auto print:p-0">
+                        <div class="min-w-[700px]">
+                            <div class="grid grid-cols-7 gap-2 mb-2 text-center">
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Lun</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Mar</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Mié</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Jue</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Vie</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Sáb</div>
+                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-700/50 py-1 rounded">Dom</div>
+                            </div>
+                            <div id="calendar-proy-grid" class="grid grid-cols-7 gap-2 calendar-grid-print">
+                                <!-- Celdas inyectadas por JS -->
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase justify-center print-hide">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-100 border border-blue-300 dark:bg-blue-900/50 dark:border-blue-700"></span> Pendiente / Próxima</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-100 border border-rose-300 dark:bg-rose-900/50 dark:border-rose-700"></span> Atrasada (Vencida)</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-100 border border-emerald-300 dark:bg-emerald-900/50 dark:border-emerald-700"></span>Al día</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ========================================== -->
+            <!-- TAB 5: API Y CONFIGURACIÓN                 -->
+            <!-- ========================================== -->
+            <section id="tab-api" class="tab-content space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 md:p-8 transition-colors">
+                    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-700">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl shrink-0"><i class="fa-solid fa-link"></i></div>
+                        <div><h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">Conexión con Google Sheets</h3></div>
+                    </div>
+                    <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-400 p-4 rounded-lg flex items-start gap-3">
+                        <i class="fa-solid fa-circle-check mt-1 text-emerald-600 dark:text-emerald-500"></i>
+                        <div>
+                            <strong class="block mb-1">Módulos Conectados Exitosamente</strong>
+                            <p class="text-sm opacity-90">El sistema procesa y conecta las tablas SEDES (FrecuenciaVisitaPv) y PROGRAMACION PV para alimentar Frecuencias, Kanban y Calendario Proyectado de Posventa.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Código Google Apps Script Recomendado -->
+                    <div class="mt-6 space-y-2">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Código Recomendado para Google Apps Script (doGet):</span>
+                        <pre class="bg-slate-900 text-slate-300 text-xs p-4 rounded-lg overflow-x-auto font-mono select-all">
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  function obtenerDatosHoja(nombreHoja) {
+    var sheet = ss.getSheetByName(nombreHoja);
+    if (!sheet) return [];
+    var data = sheet.getDataRange().getValues();
+    if (data.length &lt;= 1) return [];
+    var headers = data[0];
+    var result = [];
+    for (var i = 1; i &lt; data.length; i++) {
+      var obj = {};
+      for (var j = 0; j &lt; headers.length; j++) {
+        obj[headers[j]] = data[i][j]; 
+      }
+      result.push(obj);
+    }
+    return result;
+  }
+  var respuesta = {
+    programacion: obtenerDatosHoja("PROGRAMACION"),
+    mantenimiento: obtenerDatosHoja("MANTENIMIENTO"),
+    comodato: obtenerDatosHoja("COMODATO"),
+    sedes: obtenerDatosHoja("SEDES"),
+    equipos: obtenerDatosHoja("EQUIPOS"), // Habilitado para consultar los costos comodatos unitarios
+    requerimiento: obtenerDatosHoja("REQUERIMIENTO"),
+    detalle_req: obtenerDatosHoja("DETALLE_REQ"),
+    repuestos: obtenerDatosHoja("REPUESTOS"),
+    programacion_pv: obtenerDatosHoja("PROGRAMACION PV") // Dashboard Posventa
+  };
+  return ContentService.createTextOutput(JSON.stringify(respuesta))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODAL DETALLE DE ACTIVIDAD (REUTILIZADO) -->
+    <div id="modal-actividad" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 border dark:border-slate-700" id="modal-actividad-content">
+            <div class="bg-purple-600 dark:bg-purple-700 p-4 flex justify-between items-center text-white" id="modal-header">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-purple-200 dark:text-purple-300"></i><h3 class="font-bold text-lg leading-none" id="modal-act-id">Visita</h3></div>
+                <button onclick="cerrarModalActividad()" class="text-purple-200 dark:text-purple-300 hover:text-white transition bg-purple-700/50 dark:bg-purple-800/50 hover:bg-purple-700 dark:hover:bg-purple-800 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-5 space-y-5 overflow-y-auto max-h-[70vh]">
+                <div class="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-1">
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1" id="lbl-modal-act-cliente"><i class="fa-regular fa-building mr-1"></i>Cliente</p>
+                            <p class="text-slate-800 dark:text-slate-200 font-bold text-lg leading-tight" id="modal-act-cliente">Cliente</p>
+                        </div>
+                        <span id="modal-act-tipo-visita" class="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded text-[9px] font-bold uppercase tracking-wider border border-blue-200 dark:border-blue-800/40 text-center self-start shrink-0">Visita Técnica</span>
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1" id="lbl-modal-act-sede"><i class="fa-solid fa-location-dot mr-1"></i>Sede</p>
+                        <p class="text-slate-600 dark:text-slate-300 font-medium text-sm" id="modal-act-sede">Sede</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white dark:bg-slate-700/50 p-3 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1" id="lbl-modal-act-fecha"><i class="fa-regular fa-calendar mr-1"></i>Fecha de Inicio</p>
+                        <p class="text-slate-800 dark:text-slate-200 font-semibold text-sm" id="modal-act-fecha">Fecha</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-700/50 p-3 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm flex flex-col justify-center items-start">
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-signal mr-1"></i>Estado</p>
+                        <span id="modal-act-estado" class="px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 border">Estado</span>
+                    </div>
+                </div>
+                
+                <div id="modal-extension-fechas" class="grid grid-cols-3 gap-2 text-xs">
+                    <div class="bg-white dark:bg-slate-700/50 p-2.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                        <p class="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-0.5"><i class="fa-regular fa-calendar-check mr-1"></i>F. Término</p>
+                        <p class="text-slate-800 dark:text-slate-200 font-semibold text-xs" id="modal-act-fechafin">-</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-700/50 p-2.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                        <p class="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-0.5"><i class="fa-regular fa-clock mr-1"></i>H. Inicio</p>
+                        <p class="text-slate-800 dark:text-slate-200 font-semibold text-xs" id="modal-act-horainicio">-</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-700/50 p-2.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                        <p class="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-0.5"><i class="fa-solid fa-clock mr-1"></i>H. Fin</p>
+                        <p class="text-slate-800 dark:text-slate-200 font-semibold text-xs" id="modal-act-horafin">-</p>
+                    </div>
+                </div>
+
+                <div id="modal-detalle-actividad-container" class="bg-slate-50 dark:bg-slate-700/30 p-3.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-file-invoice mr-1"></i>Detalle / Actividad Realizada</p>
+                    <p class="text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed whitespace-pre-line" id="modal-act-detalle">No registrado.</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4" id="modal-tech-section">
+                    <div>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-users-gear mr-1"></i>Técnico(s) Asignado(s)</p>
+                        <p class="text-slate-800 dark:text-slate-200 font-medium text-sm bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-600 px-3 py-2 rounded-lg" id="modal-act-tecnico">Técnico</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800 p-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+                <button onclick="cerrarModalActividad()" class="px-5 py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-bold shadow-sm transition">Cerrar Detalle</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SCRIPT PRINCIPAL - POSVENTA -->
+    <script>
+        // =====================================================================
+        // DASHBOARD SERVICIO POSVENTA
+        // Fuente: SEDES (FrecuenciaVisitaPv) + PROGRAMACION PV
+        // =====================================================================
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        }
+
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqlXgkj_Fv8Mjw9USgv9icHvqFJXO4PfJRRKN1YSPwvbJ25bEf0ZsfJOPAuiR7y7dU3A/exec";
+
+        const dToday = new Date();
+        const yyyy = dToday.getFullYear();
+        const mm = String(dToday.getMonth() + 1).padStart(2, '0');
+        const dd = String(dToday.getDate()).padStart(2, '0');
+        const TODAY_STR = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('current-date-display').innerText = formatDateStr(TODAY_STR);
+
+        let dataProgramacionPvFull = [];
+        let dataProyectada = [];
+        let dataSedesExtendida = [];
+
+        let currentFilter = 'TODOS';
+        let sortOrder = 'asc';
+        let calProyDate = new Date();
+
+        function getVal(obj, possibleKeys) {
+            const keys = Object.keys(obj);
+            for (let key of possibleKeys) {
+                const found = keys.find(k => k.trim().toLowerCase() === key.toLowerCase());
+                if (found && obj[found] !== undefined && obj[found] !== null && obj[found] !== '') {
+                    return obj[found];
+                }
+            }
+            return null;
+        }
+
+        // Convierte el valor de fecha que llega del Apps Script a 'YYYY-MM-DD' en hora local (Lima).
+        // Apps Script serializa las fechas en ISO UTC (ej. 2026-05-26T21:00:00.000Z = 26/05 16:00 Lima):
+        // cortar el texto en la 'T' daría el día UTC, que para visitas por la tarde/noche es el día siguiente.
+        function toLocalDateStr(val) {
+            if (!val) return "";
+            const s = String(val).trim();
+            if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+                const d = new Date(s);
+                if (!isNaN(d)) {
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                }
+                return s.split('T')[0];
+            }
+            if (s.includes(' ')) return s.split(' ')[0];
+            return s;
+        }
+
+        function formatTimeVal(val) {
+            if (!val) return "";
+            const s = String(val).trim();
+            if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+                const d = new Date(s);
+                if (!isNaN(d)) return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+            }
+            const m = s.match(/(\d{1,2}):(\d{2})/);
+            return m ? `${m[1].padStart(2, '0')}:${m[2]}` : s;
+        }
+
+        async function fetchRealData() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const errorBanner = document.getElementById('error-banner');
+
+            errorBanner.classList.add('hidden');
+            loadingOverlay.style.display = 'flex';
+            setTimeout(() => loadingOverlay.classList.remove('opacity-0'), 10);
+
+            try {
+                const response = await fetch(APP_SCRIPT_URL, { mode: 'cors' });
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+                const data = await response.json();
+
+                const sedesRaw = data.sedes || data.SEDES || [];
+                const progPvRaw = data.programacion_pv || data.programacionPv || data['PROGRAMACION PV'] || data.PROGRAMACION_PV || [];
+
+                if (sedesRaw.length === 0) throw new Error("La tabla SEDES está vacía.");
+                if (progPvRaw.length === 0) throw new Error("No llegó la hoja PROGRAMACION PV. Agrega la línea programacion_pv al doGet (ver pestaña Conexión).");
+
+                // --- SEDES: solo interesa la frecuencia de posventa (no se considera DispEquipos) ---
+                const sedesPV = [];
+                dataSedesExtendida = [];
+                sedesRaw.forEach(row => {
+                    const clienteStr = String(getVal(row, ['CLIENTE', 'Cliente']) || "").trim().toUpperCase();
+                    const sedeStr = String(getVal(row, ['SEDE', 'Sede']) || "").trim().toUpperCase();
+                    const frecPv = parseInt(getVal(row, ['FrecuenciaVisitaPv', 'FrecuenciaPv'])) || 0;
+
+                    dataSedesExtendida.push({
+                        cliente: clienteStr,
+                        sede: sedeStr,
+                        frecuencia: frecPv,
+                        tipo: String(getVal(row, ['TIPO']) || "").trim().toUpperCase(),
+                        ubicacion: String(getVal(row, ['UbicaSedes', 'Ubicacion']) || "").trim()
+                    });
+
+                    if (clienteStr && sedeStr && frecPv > 0) {
+                        sedesPV.push({ cliente: clienteStr, sede: sedeStr, frecuencia: frecPv });
+                    }
+                });
+
+                // --- PROGRAMACION PV ---
+                dataProgramacionPvFull = [];
+                progPvRaw.forEach(row => {
+                    const cliente = String(getVal(row, ['ClientePv']) || "").trim().toUpperCase();
+                    const diaRaw = getVal(row, ['DiaPv']);
+                    if (!cliente && !diaRaw) return; // filas vacías
+
+                    dataProgramacionPvFull.push({
+                        id: String(getVal(row, ['nProgramPv', 'IdProgPv']) || "S/ID").trim(),
+                        cliente: cliente,
+                        sede: String(getVal(row, ['SedePv']) || "").trim().toUpperCase(),
+                        fecha: toLocalDateStr(diaRaw),
+                        fechaFin: toLocalDateStr(getVal(row, ['DiaFinPv'])),
+                        horaInicio: formatTimeVal(diaRaw),
+                        horaFin: formatTimeVal(getVal(row, ['DiaFinPv'])),
+                        detalle: String(getVal(row, ['DetallePv', 'ComentariosPv']) || "").trim(),
+                        estado: String(getVal(row, ['EstadoPv']) || "").trim().toUpperCase(),
+                        tecnico: String(getVal(row, ['ResponsablePv']) || "Sin asignar").trim(),
+                        tipoVisita: String(getVal(row, ['TipoVisitaPv']) || "Posventa").trim()
+                    });
+                });
+
+                procesarProyecciones(sedesPV);
+
+            } catch (error) {
+                console.error("Error:", error);
+                errorBanner.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> <strong>Aviso:</strong> ${error.message}`;
+                errorBanner.classList.remove('hidden');
+                procesarProyecciones([]);
+            } finally {
+                loadingOverlay.classList.add('opacity-0');
+                setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500);
+            }
+        }
+
+        // Mismas condiciones que el dashboard de operaciones:
+        // última visita REALIZADO/TERMINADO/ATENDIDO + frecuencia (días) = próxima visita.
+        // < 0 días = ATRASADO · 0-7 días = PENDIENTE · > 7 días = AL DÍA · sin visitas = SIN HISTORIAL
+        function procesarProyecciones(sedesPV) {
+            dataProyectada = [];
+            const historyMap = {};
+            dataProgramacionPvFull.forEach(p => {
+                if (p.estado === 'REALIZADO' || p.estado === 'TERMINADO' || p.estado === 'ATENDIDO') {
+                    if (p.cliente && p.sede && p.fecha) {
+                        const key = p.cliente + "||" + p.sede;
+                        if (!historyMap[key] || new Date(p.fecha + 'T12:00:00') > new Date(historyMap[key].fecha + 'T12:00:00')) {
+                            historyMap[key] = p;
+                        }
+                    }
+                }
+            });
+
+            const dHoy = new Date(TODAY_STR + 'T12:00:00');
+
+            sedesPV.forEach((s, idx) => {
+                const key = s.cliente + "||" + s.sede;
+                const ultVisitaObj = historyMap[key];
+
+                let uFechaStr = ultVisitaObj ? ultVisitaObj.fecha : null;
+                let tecnicoHist = ultVisitaObj ? ultVisitaObj.tecnico : "Sin historial previo";
+
+                let pFechaStr = null;
+                let dRestantes = 0;
+                let pEstado = "SIN HISTORIAL";
+                let plDate = null;
+
+                if (uFechaStr && s.frecuencia > 0) {
+                    const objFecha = new Date(uFechaStr + 'T12:00:00');
+                    objFecha.setDate(objFecha.getDate() + s.frecuencia);
+                    pFechaStr = `${objFecha.getFullYear()}-${String(objFecha.getMonth() + 1).padStart(2, '0')}-${String(objFecha.getDate()).padStart(2, '0')}`;
+
+                    dRestantes = Math.ceil((objFecha - dHoy) / (1000 * 60 * 60 * 24));
+
+                    if (dRestantes < 0) pEstado = "ATRASADO";
+                    else if (dRestantes <= 7) pEstado = "PENDIENTE";
+                    else pEstado = "AL DÍA";
+
+                    plDate = (pEstado === "ATRASADO") ? TODAY_STR : pFechaStr;
+                }
+
+                dataProyectada.push({
+                    id: `PROY-${idx}`,
+                    cliente: s.cliente,
+                    sede: s.sede,
+                    frecuencia: s.frecuencia,
+                    ultima: uFechaStr,
+                    proxima: pFechaStr,
+                    dias: dRestantes,
+                    estado: pEstado,
+                    plotDate: plDate,
+                    tecnico: tecnicoHist,
+                    tipoVisita: ultVisitaObj ? ultVisitaObj.tipoVisita : 'Posventa',
+                    isProyeccion: true
+                });
+            });
+
+            actualizarUICompleta();
+        }
+
+        function toggleSortOrder() {
+            sortOrder = (sortOrder === 'desc') ? 'asc' : 'desc';
+            const btnSort = document.getElementById('btn-sort');
+            if (sortOrder === 'asc') {
+                btnSort.innerHTML = '<i class="fa-solid fa-arrow-down-1-9"></i> Próximas primero';
+            } else {
+                btnSort.innerHTML = '<i class="fa-solid fa-arrow-up-9-1"></i> Lejanas primero';
+            }
+            actualizarUICompleta();
+        }
+
+        function setGlobalFilter(filtro) {
+            currentFilter = filtro;
+            document.querySelectorAll('.flt-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-white', 'dark:bg-slate-200', 'dark:text-slate-800');
+                btn.classList.add('bg-white', 'text-slate-600', 'dark:bg-slate-800', 'dark:text-slate-300');
+            });
+            const active = document.getElementById(`flt-${filtro}`);
+            if (active) {
+                active.classList.add('bg-slate-800', 'text-white', 'dark:bg-slate-200', 'dark:text-slate-800');
+                active.classList.remove('bg-white', 'text-slate-600', 'dark:bg-slate-800', 'dark:text-slate-300');
+            }
+            actualizarUICompleta();
+        }
+
+        function actualizarUICompleta() {
+            let cAtrasados = 0, cProximos = 0, cAlDia = 0, cSinHist = 0;
+            let cSedes = dataProyectada.length;
+
+            dataProyectada.forEach(item => {
+                if (item.estado === "ATRASADO") cAtrasados++;
+                else if (item.estado === "PENDIENTE") cProximos++;
+                else if (item.estado === "AL DÍA") cAlDia++;
+                else if (item.estado === "SIN HISTORIAL") cSinHist++;
+            });
+
+            document.getElementById('kpi-atrasadas').innerText = cAtrasados;
+            document.getElementById('kpi-pendientes').innerText = cProximos;
+            document.getElementById('kpi-aldia').innerText = cAlDia;
+            document.getElementById('kpi-sinhistorial').innerText = cSinHist;
+            document.getElementById('kpi-total-sedes').innerText = `/ ${cSedes}`;
+
+            renderTable();
+            renderKanban();
+            renderGridCalendarioProy();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            const searchVal = document.getElementById('table-search').value.toLowerCase().trim();
+            const emptyState = document.getElementById('empty-state');
+
+            tbody.innerHTML = '';
+
+            let filtrados = dataProyectada.filter(item => {
+                const matchFiltro = currentFilter === 'TODOS' || item.estado === currentFilter;
+                const txt = (item.cliente + " " + item.sede).toLowerCase();
+                const matchBuscador = txt.includes(searchVal);
+                return matchFiltro && matchBuscador;
+            });
+
+            filtrados.sort((a, b) => {
+                if (a.estado === "SIN HISTORIAL" && b.estado !== "SIN HISTORIAL") return 1;
+                if (b.estado === "SIN HISTORIAL" && a.estado !== "SIN HISTORIAL") return -1;
+                return sortOrder === 'asc' ? a.dias - b.dias : b.dias - a.dias;
+            });
+
+            if (filtrados.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            filtrados.forEach(item => {
+                let stClass = "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600";
+                let rowClass = "hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer";
+                let lblDias = "-";
+
+                if (item.estado === "ATRASADO") {
+                    stClass = "bg-rose-100 text-rose-700 font-bold border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800";
+                    rowClass = "hover:bg-rose-50/50 bg-rose-50/20 dark:hover:bg-rose-900/20 dark:bg-rose-900/10 cursor-pointer";
+                    lblDias = `<span class="text-rose-600 dark:text-rose-400 font-bold">Venció hace ${Math.abs(item.dias)}d</span>`;
+                } else if (item.estado === "PENDIENTE") {
+                    stClass = "bg-blue-100 text-blue-700 font-bold border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800";
+                    rowClass = "hover:bg-blue-50/50 dark:hover:bg-blue-900/20 cursor-pointer";
+                    lblDias = `<span class="text-blue-600 dark:text-blue-400 font-bold">Faltan ${item.dias}d</span>`;
+                } else if (item.estado === "AL DÍA") {
+                    stClass = "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800";
+                    lblDias = `<span class="text-emerald-600 dark:text-emerald-400">Faltan ${item.dias}d</span>`;
+                } else if (item.estado === "SIN HISTORIAL") {
+                    stClass = "bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600";
+                    lblDias = `<span class="text-slate-400 dark:text-slate-500 font-medium">Revisar</span>`;
+                }
+
+                const fUltima = item.ultima ? formatDateStr(item.ultima) : '<span class="text-slate-400 dark:text-slate-500 italic">Sin registro</span>';
+                const fProxima = item.proxima ? formatDateStr(item.proxima) : '<span class="text-slate-400 dark:text-slate-500 italic">-</span>';
+
+                const tr = document.createElement('tr');
+                tr.className = `transition border-b border-slate-100 dark:border-slate-700 last:border-none ${rowClass}`;
+                tr.onclick = () => abrirModalActividad(item, 'PROY');
+                tr.innerHTML = `
+                    <td class="py-3 px-6">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 w-64 truncate" title="${item.cliente}">${item.cliente}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 w-64 truncate" title="${item.sede}"><i class="fa-solid fa-location-dot mr-1"></i>${item.sede}</div>
+                    </td>
+                    <td class="py-3 px-6 text-center">
+                        <span class="px-2 py-1 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded text-xs font-bold">${item.frecuencia} d</span>
+                    </td>
+                    <td class="py-3 px-6 text-sm text-slate-600 dark:text-slate-400 font-medium">${fUltima}</td>
+                    <td class="py-3 px-6 text-sm font-bold text-slate-800 dark:text-slate-200">${fProxima}</td>
+                    <td class="py-3 px-6 text-center text-sm">${lblDias}</td>
+                    <td class="py-3 px-6 text-center">
+                        <span class="px-2.5 py-1 rounded border text-[10px] uppercase tracking-wider ${stClass}">
+                            ${item.estado === 'PENDIENTE' ? 'PRÓXIMO' : item.estado}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderKanban() {
+            const colUrg = document.getElementById('kb-col-atrasado');
+            const colPend = document.getElementById('kb-col-pendiente');
+            const colAlDia = document.getElementById('kb-col-aldia');
+            const colSin = document.getElementById('kb-col-sinhistorial');
+
+            colUrg.innerHTML = ''; colPend.innerHTML = ''; colAlDia.innerHTML = ''; colSin.innerHTML = '';
+
+            const sorted = [...dataProyectada].sort((a, b) => a.dias - b.dias);
+
+            sorted.forEach(item => {
+                if (currentFilter !== 'TODOS' && item.estado !== currentFilter) return;
+
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition text-sm relative overflow-hidden group cursor-pointer";
+                card.onclick = () => abrirModalActividad(item, 'PROY');
+
+                let bColor = "bg-slate-400";
+                if (item.estado === "AL DÍA") bColor = "bg-emerald-500";
+                else if (item.estado === "ATRASADO") bColor = "bg-rose-500";
+                else if (item.estado === "PENDIENTE") bColor = "bg-blue-500";
+
+                card.innerHTML = `
+                    <div class="absolute left-0 top-0 bottom-0 w-1 ${bColor}"></div>
+                    <div class="pl-2">
+                        <h5 class="font-bold text-slate-800 dark:text-slate-200 leading-tight mb-0.5 truncate" title="${item.cliente}">${item.cliente}</h5>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2 truncate">${item.sede}</p>
+                        <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-700/50 p-1.5 rounded text-[10px]">
+                            <span class="text-slate-500 dark:text-slate-400">Prox:</span>
+                            <span class="font-bold ${item.estado === 'ATRASADO' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'}">${item.proxima ? formatDateStr(item.proxima) : '-'}</span>
+                        </div>
+                    </div>
+                `;
+
+                if (item.estado === "AL DÍA") colAlDia.appendChild(card);
+                else if (item.estado === "ATRASADO") colUrg.appendChild(card);
+                else if (item.estado === "PENDIENTE") colPend.appendChild(card);
+                else colSin.appendChild(card);
+            });
+
+            document.getElementById('kb-count-atrasado').innerText = colUrg.children.length;
+            document.getElementById('kb-count-pendiente').innerText = colPend.children.length;
+            document.getElementById('kb-count-aldia').innerText = colAlDia.children.length;
+            document.getElementById('kb-count-sinhistorial').innerText = colSin.children.length;
+        }
+
+        function changeCalProyMonth(offset) {
+            calProyDate.setDate(1);
+            calProyDate.setMonth(calProyDate.getMonth() + offset);
+            renderGridCalendarioProy();
+        }
+
+        function renderGridCalendarioProy() {
+            const grid = document.getElementById('calendar-proy-grid');
+            if (!grid) return;
+
+            const year = calProyDate.getFullYear();
+            const month = calProyDate.getMonth();
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('cal-proy-month-label').innerText = `${monthNames[month]} ${year}`;
+            const printSub = document.getElementById('print-cal-proy-subtitle');
+            if (printSub) printSub.innerText = `${monthNames[month]} ${year}`;
+
+            let html = '';
+            // Lunes = 0 ... Domingo = 6 (coincide con el encabezado Lun-Dom)
+            const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                html += `<div class="bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-lg min-h-[6rem] sm:min-h-[8rem]"></div>`;
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isToday = currentDateStr === TODAY_STR;
+
+                const visitasDia = dataProyectada.filter(
+                    v => v.plotDate === currentDateStr &&
+                    (v.estado === 'ATRASADO' || v.estado === 'PENDIENTE' || v.estado === 'AL DÍA')
+                );
+
+                let visitasHtml = '';
+                visitasDia.forEach(v => {
+                    let badgeClass = "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/50 print:border-blue-300";
+                    let printClass = "print-ev-pendiente";
+
+                    if (v.estado === "ATRASADO") {
+                        badgeClass = "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800 dark:hover:bg-rose-900/50 font-bold print:border-rose-300";
+                        printClass = "print-ev-atrasado";
+                    } else if (v.estado === "AL DÍA") {
+                        badgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-900/50 print:border-emerald-300";
+                        printClass = "print-ev-aldia";
+                    }
+
+                    visitasHtml += `
+                        <div onclick="abrirModalActividadById('${v.id}', 'PROY')" class="tec-event text-[9px] sm:text-[10px] p-1 mb-1 rounded cursor-pointer transition transform hover:scale-[1.02] shadow-sm flex flex-col gap-0.5 ${badgeClass} ${printClass}" title="${v.estado}">
+                            <div class="screen-only truncate font-bold">${v.cliente}</div>
+                            <div class="screen-only truncate text-[8px]"><i class="fa-solid fa-location-dot mr-1"></i>${v.sede}</div>
+                            <div class="print-only font-bold text-[8px] leading-tight">${v.cliente}</div>
+                            <div class="print-only text-[7px] leading-none text-slate-700">${v.sede}</div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="bg-white dark:bg-slate-800 border ${isToday ? 'border-emerald-400 ring-1 ring-emerald-400 dark:border-emerald-500 dark:ring-emerald-500 print:border-emerald-600 print:ring-2' : 'border-slate-200 dark:border-slate-700'} rounded-lg min-h-[6rem] sm:min-h-[8rem] p-1.5 flex flex-col transition-all hover:shadow-md">
+                        <span class="text-xs font-bold ${isToday ? 'text-white bg-emerald-500 w-6 h-6 flex items-center justify-center rounded-full shadow-sm print:bg-emerald-600 print:text-white' : 'text-slate-500 dark:text-slate-400'} mb-1">${d}</span>
+                        <div class="flex-1 pr-1">
+                            ${visitasHtml}
+                        </div>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        function abrirModalActividadById(id, sourceMode) {
+            let found = null;
+            if (sourceMode === 'PROY') {
+                found = dataProyectada.find(x => x.id === id);
+            } else {
+                found = dataProgramacionPvFull.find(x => x.id === id);
+            }
+            if (found) abrirModalActividad(found, sourceMode);
+        }
+
+        function abrirModalActividad(objData, sourceMode) {
+            const headerEl = document.getElementById('modal-header');
+            if (sourceMode === 'PROY') {
+                document.getElementById('modal-act-id').innerText = "Visita Posventa Proyectada";
+                headerEl.className = "bg-emerald-600 dark:bg-emerald-700 p-4 flex justify-between items-center text-white";
+                document.getElementById('modal-tech-section').style.display = 'none';
+            } else {
+                document.getElementById('modal-act-id').innerText = objData.id;
+                headerEl.className = "bg-purple-600 dark:bg-purple-700 p-4 flex justify-between items-center text-white";
+                document.getElementById('modal-tech-section').style.display = 'block';
+                document.getElementById('modal-act-tecnico').innerText = objData.tecnico;
+            }
+            document.getElementById('lbl-modal-act-fecha').innerHTML = '<i class="fa-regular fa-calendar mr-1"></i>Fecha de Inicio';
+
+            document.getElementById('modal-act-cliente').innerText = objData.cliente;
+            document.getElementById('modal-act-sede').innerText = objData.sede;
+
+            const dateToShow = sourceMode === 'PROY' ? objData.proxima : objData.fecha;
+            document.getElementById('modal-act-fecha').innerText = dateToShow ? formatDateStr(dateToShow) : 'Sin fecha';
+
+            document.getElementById('modal-act-fechafin').innerText = objData.fechaFin ? formatDateStr(objData.fechaFin) : 'No registra';
+            document.getElementById('modal-act-horainicio').innerText = objData.horaInicio || 'No registra';
+            document.getElementById('modal-act-horafin').innerText = objData.horaFin || 'No registra';
+            document.getElementById('modal-act-detalle').innerText = objData.detalle || 'No hay resumen de actividad registrado para esta visita.';
+            document.getElementById('modal-act-tipo-visita').innerText = objData.tipoVisita || 'Posventa';
+
+            const estadoEl = document.getElementById('modal-act-estado');
+            if (objData.estado === "ATRASADO") {
+                estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800";
+                estadoEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> VENCIDO / ATRASADO';
+            } else if (objData.estado === "REALIZADO" || objData.estado === "AL DÍA") {
+                estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800";
+                estadoEl.innerHTML = '<i class="fa-solid fa-check"></i> ' + (objData.estado === 'AL DÍA' ? 'AL DÍA' : 'REALIZADO');
+            } else if (objData.estado === "PENDIENTE") {
+                estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800";
+                estadoEl.innerHTML = '<i class="fa-regular fa-clock"></i> PRÓXIMO';
+            } else if (objData.estado === "CANCELADO") {
+                estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-800";
+                estadoEl.innerHTML = '<i class="fa-solid fa-ban"></i> CANCELADO';
+            } else {
+                estadoEl.className = "px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600";
+                estadoEl.innerHTML = '<i class="fa-solid fa-file-circle-question"></i> SIN HISTORIAL';
+            }
+
+            const modal = document.getElementById('modal-actividad');
+            const content = document.getElementById('modal-actividad-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+        }
+
+        function cerrarModalActividad() {
+            const modal = document.getElementById('modal-actividad');
+            const content = document.getElementById('modal-actividad-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        }
+
+        function formatDateStr(dateStr) {
+            if (!dateStr || dateStr === 'Nunca' || dateStr === '-') return dateStr;
+            const parts = String(dateStr).split('-');
+            if (parts.length < 3) return dateStr;
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            return `${parts[2]} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'font-medium', 'shadow-md', 'shadow-blue-900/20');
+                btn.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+            });
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-blue-600', 'text-white', 'font-medium', 'shadow-md', 'shadow-blue-900/20');
+                activeBtn.classList.remove('text-slate-400', 'hover:bg-slate-800');
+            }
+
+            const kpiSect = document.getElementById('kpi-section');
+            const filterSect = document.getElementById('year-filter-section');
+            if (tabId === 'dashboard' || tabId === 'kanban') {
+                kpiSect.style.display = 'grid';
+                filterSect.style.display = 'flex';
+            } else {
+                kpiSect.style.display = 'none';
+                filterSect.style.display = 'none';
+            }
+
+            const titles = {
+                dashboard: { title: "Control de Frecuencias Posventa", sub: "Proyección basada en visitas Realizadas de PROGRAMACION PV y FrecuenciaVisitaPv." },
+                kanban: { title: "Kanban de Prioridades Posventa", sub: "Visualización rápida del estado de visitas de posventa" },
+                cal_proy: { title: "Calendario Proyectado Posventa", sub: "Próximos vencimientos de visitas (sedes con FrecuenciaVisitaPv)" },
+                api: { title: "Conexión AppSheet", sub: "Configuración y estructura de base de datos" }
+            };
+            if (titles[tabId]) {
+                document.getElementById('page-title').innerText = titles[tabId].title;
+                document.getElementById('page-subtitle').innerText = titles[tabId].sub;
+            }
+
+            const isMobile = window.innerWidth < 768;
+            if (isMobile && !document.getElementById('sidebar').classList.contains('-translate-x-full')) {
+                toggleMobileMenu();
+            }
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('mobile-overlay').classList.toggle('hidden');
+        }
+
+        window.onload = () => { fetchRealData(); };
+    </script>
+</body>
+</html>
