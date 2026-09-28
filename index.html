@@ -1014,6 +1014,44 @@
         </div>
     </main>
 
+    <!-- MODAL: VISITAS PROYECTADAS DEL DÍA -->
+    <div id="modal-dia" onclick="if(event.target===this) cerrarModalDiaProy()" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[90] hidden items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+        <div id="modal-dia-content" class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border dark:border-slate-700">
+            <div class="bg-emerald-600 dark:bg-emerald-700 p-4 flex justify-between items-start text-white shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg leading-tight flex items-center gap-2"><i class="fa-regular fa-calendar-check"></i><span id="modal-dia-titulo">Visitas del día</span></h3>
+                    <p class="text-xs text-emerald-100 mt-0.5" id="modal-dia-sub"></p>
+                </div>
+                <button onclick="cerrarModalDiaProy()" class="text-emerald-100 hover:text-white bg-emerald-700/50 hover:bg-emerald-800 w-8 h-8 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-3 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center shrink-0">
+                <div class="flex gap-2 flex-wrap" id="modal-dia-chips"></div>
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input id="modal-dia-search" oninput="renderModalDiaProy()" type="text" placeholder="Buscar cliente o sede..." class="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+            <div class="overflow-y-auto flex-1">
+                <table class="w-full text-left text-sm">
+                    <thead class="sticky top-0 bg-slate-50 dark:bg-slate-900">
+                        <tr class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                            <th class="py-2 px-4">Cliente / Sede</th>
+                            <th class="py-2 px-4 text-center">Frecuencia</th>
+                            <th class="py-2 px-4">Fechas</th>
+                            <th class="py-2 px-4 text-center">Días</th>
+                            <th class="py-2 px-4 text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-dia-tbody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+                </table>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800 p-3 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400"><i class="fa-solid fa-hand-pointer mr-1"></i>Clic en una sede para ver su detalle</span>
+                <button onclick="cerrarModalDiaProy()" class="px-5 py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-bold shadow-sm transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DETALLE DE ACTIVIDAD (REUTILIZADO) -->
     <div id="modal-actividad" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 transition-opacity duration-300 opacity-0">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-300 border dark:border-slate-700" id="modal-actividad-content">
@@ -1698,8 +1736,9 @@
 
         // Estado del informe de una visita.
         // Solo requieren informe las visitas REALIZADAS cuyo EstadoInforme no sea "NO REQUIERE".
+        // Las visitas al cliente SPARTAN CHEMICAL PERU SAC (actividades internas) nunca requieren informe.
         function infoInforme(v) {
-            if (!esRealizado(v) || v.estadoInforme === 'NO REQUIERE') return { requerido: false };
+            if (!esRealizado(v) || v.estadoInforme === 'NO REQUIERE' || esInterno(v)) return { requerido: false };
             const base = (v.fechaFin && v.fecha && v.fechaFin >= v.fecha) ? v.fechaFin : v.fecha;
             const entregado = v.estadoInforme === 'TERMINADO';
             if (entregado) {
@@ -2411,51 +2450,115 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             for (let i = 0; i < firstDayIndex; i++) {
-                html += `<div class="bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-lg min-h-[6rem] sm:min-h-[8rem]"></div>`;
+                html += `<div class="bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-lg min-h-[6rem] sm:min-h-[7rem]"></div>`;
             }
 
             for (let d = 1; d <= daysInMonth; d++) {
                 const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const isToday = currentDateStr === TODAY_STR;
+                const visitasDia = visitasProyDia(currentDateStr);
 
-                const visitasDia = dataProyectada.filter(
-                    v => v.plotDate === currentDateStr &&
-                    (v.estado === 'ATRASADO' || v.estado === 'PENDIENTE' || v.estado === 'AL DÍA')
-                );
+                const nAtr = visitasDia.filter(v => v.estado === 'ATRASADO').length;
+                const nPen = visitasDia.filter(v => v.estado === 'PENDIENTE').length;
+                const nOk = visitasDia.filter(v => v.estado === 'AL DÍA').length;
 
-                let visitasHtml = '';
-                visitasDia.forEach(v => {
-                    let badgeClass = "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/50 print:border-blue-300";
-                    let printClass = "print-ev-pendiente";
+                // Pantalla: solo un resumen por estado; el detalle se ve en la ventana del día
+                let resumenHtml = '';
+                if (visitasDia.length) {
+                    const pill = (n, txt, cls) => n ? `<div class="flex items-center justify-between gap-1 px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold border ${cls}"><span class="truncate">${txt}</span><span>${n}</span></div>` : '';
+                    resumenHtml = `
+                        <div class="screen-only space-y-1">
+                            ${pill(nAtr, 'Atrasadas', 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800')}
+                            ${pill(nPen, 'Próximas', 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800')}
+                            ${pill(nOk, 'Al día', 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800')}
+                            <div class="text-[9px] font-bold text-slate-400 dark:text-slate-500 text-center pt-0.5"><i class="fa-solid fa-eye mr-1"></i>Ver ${visitasDia.length} ${visitasDia.length === 1 ? 'visita' : 'visitas'}</div>
+                        </div>`;
+                    // Impresión: se conserva el listado compacto de clientes
+                    resumenHtml += visitasDia.map(v => {
+                        const pc = v.estado === 'ATRASADO' ? 'print-ev-atrasado' : v.estado === 'AL DÍA' ? 'print-ev-aldia' : 'print-ev-pendiente';
+                        return `<div class="print-only tec-event-print ${pc}"><div class="font-bold text-[8px] leading-tight">${v.cliente}</div><div class="text-[7px] leading-none text-slate-700">${v.sede}</div></div>`;
+                    }).join('');
+                }
 
-                    if (v.estado === "ATRASADO") {
-                        badgeClass = "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800 dark:hover:bg-rose-900/50 font-bold print:border-rose-300";
-                        printClass = "print-ev-atrasado";
-                    } else if (v.estado === "AL DÍA") {
-                        badgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-900/50 print:border-emerald-300";
-                        printClass = "print-ev-aldia";
-                    }
-
-                    visitasHtml += `
-                        <div onclick="abrirModalActividadById('${v.id}', 'PROY')" class="tec-event text-[9px] sm:text-[10px] p-1 mb-1 rounded cursor-pointer transition transform hover:scale-[1.02] shadow-sm flex flex-col gap-0.5 ${badgeClass} ${printClass}" title="${v.estado}">
-                            <div class="screen-only truncate font-bold">${v.cliente}</div>
-                            <div class="screen-only truncate text-[8px]"><i class="fa-solid fa-location-dot mr-1"></i>${v.sede}</div>
-                            <div class="print-only font-bold text-[8px] leading-tight">${v.cliente}</div>
-                            <div class="print-only text-[7px] leading-none text-slate-700">${v.sede}</div>
-                        </div>
-                    `;
-                });
-
+                const clickable = visitasDia.length ? `onclick="abrirModalDiaProy('${currentDateStr}')" title="Ver ${visitasDia.length} visitas"` : '';
                 html += `
-                    <div class="bg-white dark:bg-slate-800 border ${isToday ? 'border-emerald-400 ring-1 ring-emerald-400 dark:border-emerald-500 dark:ring-emerald-500 print:border-emerald-600 print:ring-2' : 'border-slate-200 dark:border-slate-700'} rounded-lg min-h-[6rem] sm:min-h-[8rem] p-1.5 flex flex-col transition-all hover:shadow-md">
+                    <div ${clickable} class="bg-white dark:bg-slate-800 border ${isToday ? 'border-emerald-400 ring-1 ring-emerald-400 dark:border-emerald-500 dark:ring-emerald-500 print:border-emerald-600 print:ring-2' : 'border-slate-200 dark:border-slate-700'} rounded-lg min-h-[6rem] sm:min-h-[7rem] p-1.5 flex flex-col transition-all ${visitasDia.length ? 'cursor-pointer hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700' : ''}">
                         <span class="text-xs font-bold ${isToday ? 'text-white bg-emerald-500 w-6 h-6 flex items-center justify-center rounded-full shadow-sm print:bg-emerald-600 print:text-white' : 'text-slate-500 dark:text-slate-400'} mb-1">${d}</span>
-                        <div class="flex-1 pr-1">
-                            ${visitasHtml}
-                        </div>
+                        <div class="flex-1">${resumenHtml}</div>
                     </div>
                 `;
             }
             grid.innerHTML = html;
+        }
+
+        function visitasProyDia(fechaStr) {
+            return dataProyectada.filter(v => v.plotDate === fechaStr && ['ATRASADO', 'PENDIENTE', 'AL DÍA'].includes(v.estado));
+        }
+
+        let modalDiaFecha = null;
+        let modalDiaFiltro = 'TODOS';
+
+        function abrirModalDiaProy(fechaStr) {
+            modalDiaFecha = fechaStr;
+            modalDiaFiltro = 'TODOS';
+            document.getElementById('modal-dia-search').value = '';
+            renderModalDiaProy();
+            const modal = document.getElementById('modal-dia');
+            const content = document.getElementById('modal-dia-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+        }
+
+        function cerrarModalDiaProy() {
+            const modal = document.getElementById('modal-dia');
+            const content = document.getElementById('modal-dia-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        }
+
+        function setModalDiaFiltro(f) {
+            modalDiaFiltro = f;
+            renderModalDiaProy();
+        }
+
+        function renderModalDiaProy() {
+            const todas = visitasProyDia(modalDiaFecha);
+            const esHoy = modalDiaFecha === TODAY_STR;
+            document.getElementById('modal-dia-titulo').innerText = `Visitas proyectadas — ${formatDateStr(modalDiaFecha)}`;
+            document.getElementById('modal-dia-sub').innerText = esHoy
+                ? 'Incluye las visitas atrasadas, que se acumulan en el día de hoy.'
+                : `${todas.length} ${todas.length === 1 ? 'sede por visitar' : 'sedes por visitar'} según su frecuencia de posventa.`;
+
+            const cnt = e => todas.filter(v => v.estado === e).length;
+            const chips = [['TODOS', 'Todas', todas.length], ['ATRASADO', 'Atrasadas', cnt('ATRASADO')], ['PENDIENTE', 'Próximas', cnt('PENDIENTE')], ['AL DÍA', 'Al día', cnt('AL DÍA')]];
+            document.getElementById('modal-dia-chips').innerHTML = chips.filter(c => c[0] === 'TODOS' || c[2] > 0).map(([k, l, n]) =>
+                `<button onclick="setModalDiaFiltro('${k}')" class="px-2.5 py-1 rounded-md text-[11px] font-bold border transition ${modalDiaFiltro === k ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}">${l} <span class="opacity-70">${n}</span></button>`).join('');
+
+            const q = document.getElementById('modal-dia-search').value.toLowerCase().trim();
+            const lista = todas
+                .filter(v => modalDiaFiltro === 'TODOS' || v.estado === modalDiaFiltro)
+                .filter(v => !q || (v.cliente + ' ' + v.sede).toLowerCase().includes(q))
+                .sort((a, b) => a.dias - b.dias);
+
+            const tbody = document.getElementById('modal-dia-tbody');
+            if (!lista.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 italic">Sin resultados.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = lista.map(v => {
+                let est = ['bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800', 'AL DÍA', `<span class="text-emerald-600 dark:text-emerald-400">Faltan ${v.dias}d</span>`];
+                if (v.estado === 'ATRASADO') est = ['bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800', 'ATRASADO', `<span class="text-rose-600 dark:text-rose-400 font-bold">Venció hace ${Math.abs(v.dias)}d</span>`];
+                else if (v.estado === 'PENDIENTE') est = ['bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800', 'PRÓXIMO', `<span class="text-blue-600 dark:text-blue-400 font-bold">${v.dias === 0 ? 'Vence hoy' : 'Faltan ' + v.dias + 'd'}</span>`];
+                return `<tr onclick="abrirModalActividadById('${v.id}', 'PROY')" class="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition">
+                    <td class="py-2.5 px-4"><div class="font-bold text-slate-800 dark:text-slate-200 max-w-[260px] truncate" title="${v.cliente}">${v.cliente}</div><div class="text-[11px] text-slate-500 dark:text-slate-400 max-w-[260px] truncate"><i class="fa-solid fa-location-dot mr-1"></i>${v.sede}</div></td>
+                    <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-[11px] font-bold text-slate-600 dark:text-slate-300">${v.frecuencia} d</span></td>
+                    <td class="py-2.5 px-4 text-xs text-slate-600 dark:text-slate-400"><div>Última: <strong>${v.ultima ? formatDateStr(v.ultima) : '-'}</strong></div><div>Tocaba: <strong>${v.proxima ? formatDateStr(v.proxima) : '-'}</strong></div></td>
+                    <td class="py-2.5 px-4 text-center text-xs">${est[2]}</td>
+                    <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded border text-[10px] font-bold uppercase ${est[0]}">${est[1]}</span></td>
+                </tr>`;
+            }).join('');
         }
 
         function abrirModalActividadById(id, sourceMode) {
